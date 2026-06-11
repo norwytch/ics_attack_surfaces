@@ -28,18 +28,25 @@ if any OT-protocol asset maps to zero techniques. Full suite green.
 the remote-access host reaches L2 directly, and the model can't yet express that the DMZ
 *should* have stopped it — it's a connection, not an enforced boundary.
 
-### 2. Make attack paths security-meaningful, not just topological
-**Problem.** [src/scoring.py](src/scoring.py) runs k-shortest-paths on an **undirected**
-graph where every edge is equally traversable. A HTTPS enterprise link and an
-unauthenticated Modbus control link weigh the same, and the DMZ is a *node*, not an
-enforced boundary — nothing actually stops traversal there. So "shortest external→critical
-path" is graph topology, not attacker reachability.
-**Plan.** Give edges a direction and a protocol/port, model the DMZ and firewalls as
-policy (allow/deny), and make path-finding respect reachability (an attacker can only
-traverse an edge they can actually exploit from where they are). Weight path "cost" by how
-hard each hop is rather than counting hops.
-**Done when.** A path blocked by a deny rule at the DMZ does not appear in the findings,
-and removing a firewall rule visibly changes the attack-path set.
+### 2. Make attack paths security-meaningful, not just topological — DONE
+**Problem.** Path-finding ran on an **undirected** graph where every edge was equally
+traversable; the DMZ was a *node*, not an enforced boundary, so "shortest path" was
+topology, not attacker reachability.
+**What was done.** Added a `segmentation` policy to the architecture schema (zone-to-zone
+boundaries with per-protocol allow-lists; default-allow keeps old models working).
+`Architecture.reachability_graph()` builds a **directed** graph containing only the edges
+the policy permits, weighted by hop difficulty (unauthenticated targets are cheaper).
+Attack-path and chokepoint analysis now run on that graph, so denied edges are absent and
+paths are ranked by summed difficulty (`cost`), not hop count. Added
+`segmentation_violations()` to flag permitted edges that cross the IT/OT boundary directly,
+skipping the DMZ. Both reference plants got policies: the transit plant is properly
+segmented (clean), the water plant leaves the remote-access→SCADA link un-firewalled and
+the briefing flags it as the top segmentation fix (the Oldsmar pattern).
+**Done when — met.** `test_deny_boundary_blocks_path` shows a path vanishing when a
+boundary denies it; `test_removing_the_rule_restores_the_path` shows the set change; the
+water briefing reports the bypass while the transit one reports none. Full suite (28) green.
+**Follow-up.** Protocol-on-edge is approximated by the destination's protocols (no
+per-connection protocol field yet); good enough for boundary enforcement, refine if needed.
 
 ### 3. Own the scoring model — justify the weights or reframe them
 **Problem.** The likelihood/impact weights (`0.4/0.3/0.3`, `0.6/0.4`), the exposure decay

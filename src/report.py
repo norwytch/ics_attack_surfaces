@@ -18,10 +18,11 @@ _LEVEL_ORDER = [  # process -> internet, for inventory grouping
 # Briefing
 # --------------------------------------------------------------------------- #
 def generate_briefing(architecture, mapped, scores, paths, chokepoints_,
-                      campaign_matches, dest: str = "results/briefing.md") -> str:
+                      campaign_matches, violations=None, dest: str = "results/briefing.md") -> str:
     """Render the vulnerability briefing to `dest`; also returns the markdown."""
     assets = architecture.assets
     name = architecture.meta.get("name", "ICS reference architecture")
+    violations = violations or []
     ranked = sorted(scores.items(), key=lambda kv: (-kv[1]["severity"], -kv[1]["impact"]))
     top_choke = max(chokepoints_.items(), key=lambda kv: kv[1]) if chokepoints_ else None
 
@@ -46,8 +47,10 @@ def generate_briefing(architecture, mapped, scores, paths, chokepoints_,
                  f"(betweenness {top_choke[1]:.2f}) — sits on the most external→critical paths.")
     if paths:
         p = paths[0]
-        L.append(f"- Shortest external→critical path: {' → '.join(p['path'])} "
-                 f"({p['length']} hops, target risk {p['target_band']}).")
+        L.append(f"- Easiest external→critical path: {' → '.join(p['path'])} "
+                 f"({p['length']} hops, cost {p['cost']}, target risk {p['target_band']}).")
+    if violations:
+        L.append(f"- **{len(violations)} IT/OT segmentation bypass(es)** detected — see below.")
     L.append("")
 
     # Asset inventory -------------------------------------------------------
@@ -74,12 +77,27 @@ def generate_briefing(architecture, mapped, scores, paths, chokepoints_,
         L.append(f"- **{n}**: {labels}")
     L.append("")
 
+    # Segmentation findings -------------------------------------------------
+    L.append("## Segmentation findings\n")
+    if not violations:
+        L.append("No direct IT→OT boundary bypasses — enterprise/internet assets reach "
+                 "the OT zones only through the DMZ.\n")
+    else:
+        L.append("Connections that cross the IT/OT boundary **directly, skipping the "
+                 "DMZ** — the segmentation control that should mediate them:")
+        for v in violations:
+            L.append(f"- **{v['from']}** ({v['from_zone']}) → **{v['to']}** ({v['to_zone']}) "
+                     f"— flat path from IT into OT; highest-priority segmentation fix.")
+        L.append("")
+
     # Attack-path findings --------------------------------------------------
-    L.append("## Attack-path findings (shortest external→critical first)\n")
+    L.append("## Attack-path findings (easiest external→critical first)\n")
+    L.append("_Paths respect the segmentation policy — edges the firewall denies are "
+             "excluded. Cost = summed hop difficulty (unauthenticated hops are cheaper)._\n")
     if not paths:
-        L.append("_No external→critical paths found._\n")
+        L.append("_No policy-permitted external→critical paths found._\n")
     for i, p in enumerate(paths, 1):
-        L.append(f"{i}. [{p['length']} hops] {' → '.join(p['path'])} "
+        L.append(f"{i}. [{p['length']} hops, cost {p['cost']}] {' → '.join(p['path'])} "
                  f"— target **{p['target']}** ({p['target_band']})")
     L.append("")
 

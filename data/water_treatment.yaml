@@ -19,6 +19,18 @@ meta:
 entry_nodes: [internet_gateway, remote_access_host]
 target_nodes: [dosing_plc, pump_plc]
 
+# Firewall / segmentation policy (the DEPLOYED config). The historian path is
+# properly mediated by the DMZ, but the remote-access host's direct link to the
+# SCADA server is NOT firewalled — there is no boundary blocking L4 -> L2 here, so
+# `default: allow` lets it through. The model flags that as a segmentation bypass.
+segmentation:
+  default: allow
+  boundaries:
+    - between: [L4_ENTERPRISE, L3_5_DMZ]
+      allow_protocols: [HTTPS, SQL]
+    - between: [L3_5_DMZ, L3_OPERATIONS]
+      allow_protocols: [SQL, OPC]
+
 assets:
   - name: internet_gateway
     level: L5_INTERNET

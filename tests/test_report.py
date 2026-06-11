@@ -59,9 +59,9 @@ def test_generate_briefing_has_core_sections(tmp_path):
     chokes = chokepoints(g)
     campaigns = map_campaigns_to_exposure(mapped, [])
     dest = tmp_path / "briefing.md"
-    text = generate_briefing(arch, mapped, scores, paths, chokes, campaigns, str(dest))
+    text = generate_briefing(arch, mapped, scores, paths, chokes, campaigns, [], str(dest))
     for heading in ("Executive summary", "Asset inventory", "Attack-path findings",
-                    "Threat-trend mapping", "mitigation recommendations"):
+                    "Segmentation findings", "Threat-trend mapping", "mitigation recommendations"):
         assert heading in text
     assert dest.exists()
 

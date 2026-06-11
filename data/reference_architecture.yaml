@@ -14,6 +14,26 @@ meta:
 entry_nodes: [internet_gateway, vendor_remote_access]
 target_nodes: [wayside_plc, interlocking_controller]
 
+# Firewall / segmentation policy (the DEPLOYED config). A transition between two
+# Purdue zones is allowed only if listed here (with a permitted protocol); empty
+# allow_protocols = blocked. Unlisted transitions follow `default`. This plant is
+# properly segmented: enterprise/internet reach OT only through the DMZ.
+segmentation:
+  default: allow
+  boundaries:
+    - between: [L4_ENTERPRISE, L3_5_DMZ]
+      allow_protocols: [HTTPS, SQL]
+    - between: [L3_5_DMZ, L3_OPERATIONS]
+      allow_protocols: [SQL, OPC]
+    - between: [L3_5_DMZ, L2_SUPERVISORY]
+      allow_protocols: [OPC, RDP, SSH, Modbus]
+    - between: [L4_ENTERPRISE, L2_SUPERVISORY]    # no direct IT -> supervisory
+      allow_protocols: []
+    - between: [L4_ENTERPRISE, L1_CONTROL]        # no direct IT -> control
+      allow_protocols: []
+    - between: [L5_INTERNET, L2_SUPERVISORY]
+      allow_protocols: []
+
 assets:
   - name: internet_gateway
     level: L5_INTERNET

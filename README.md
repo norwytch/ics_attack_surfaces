@@ -13,8 +13,9 @@ for the full design.
 ## Status
 
 End-to-end functional. The pipeline loads the reference architecture, maps assets to
-ATT&CK for ICS techniques, scores risk (NIST 800-30 Table I-2), runs attack-path /
-chokepoint analysis, correlates real campaigns, and generates the briefing + figures.
+ATT&CK for ICS techniques, scores risk (NIST 800-30 Table I-2), runs **segmentation-aware**
+attack-path / chokepoint analysis (paths respect the firewall policy; IT→OT boundary
+bypasses are flagged), correlates real campaigns, and generates the briefing + figures.
 CVE/KEV enrichment is opt-in (`--cves`, requires network).
 
 ## Layout

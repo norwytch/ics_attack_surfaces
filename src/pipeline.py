@@ -16,7 +16,12 @@ from .report import (
     plot_network,
     plot_risk_matrix,
 )
-from .scoring import chokepoints, path_findings, score_architecture
+from .scoring import (
+    chokepoints,
+    path_findings,
+    score_architecture,
+    segmentation_violations,
+)
 from .trends import load_campaigns, map_campaigns_to_exposure
 
 
@@ -45,11 +50,13 @@ def build(arch_path="data/reference_architecture.yaml",
         kev = fetch_kev_catalog()
 
     mapped = map_architecture(arch, rules, attack=attack, kev=kev, fetch_cves=fetch_cves)
-    graph = arch.graph()
+    graph = arch.graph()                     # physical topology: diagram + blast-radius impact
+    reach = arch.reachability_graph()        # policy-respecting: attack paths + chokepoints
     cves_by_asset = {n: m["cves"] for n, m in mapped.items()}
     scores = score_architecture(arch, graph, cves_by_asset)
-    paths = path_findings(graph, arch.entry_nodes, arch.target_nodes, scores)
-    chokes = chokepoints(graph)
+    paths = path_findings(reach, arch.entry_nodes, arch.target_nodes, scores)
+    chokes = chokepoints(reach)
+    violations = segmentation_violations(arch)
     campaigns = map_campaigns_to_exposure(mapped, load_campaigns(trends_path))
 
     figdir = f"{out_dir}/figures"
@@ -57,7 +64,7 @@ def build(arch_path="data/reference_architecture.yaml",
     plot_exposure_heatmap(mapped, f"{figdir}/heatmap.png")
     plot_risk_matrix(scores, f"{figdir}/risk_matrix.png")
 
-    return generate_briefing(arch, mapped, scores, paths, chokes, campaigns,
+    return generate_briefing(arch, mapped, scores, paths, chokes, campaigns, violations,
                              f"{out_dir}/briefing.md")
 
 

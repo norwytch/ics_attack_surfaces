@@ -50,8 +50,17 @@ def risk_band(likelihood: float, impact: float) -> str:
     return BAND_ORDER[risk_severity(likelihood, impact)]
 
 
-def attack_paths(graph, entry_nodes, target_nodes, k: int = 5):
-    """k shortest paths from each entry node to each target. Shortest = highest priority."""
+IT_ZONES = {"L4_ENTERPRISE", "L5_INTERNET"}
+OT_ZONES = {"L0_PROCESS", "L1_CONTROL", "L2_SUPERVISORY"}
+
+
+def attack_paths(graph, entry_nodes, target_nodes, k: int = 5, weight: str | None = "weight"):
+    """k easiest paths from each entry node to each target.
+
+    Runs on whatever graph is passed — give it `architecture.reachability_graph()` so
+    edges the segmentation policy denies are absent. With `weight` set, paths are ranked
+    by summed hop difficulty (easiest first); missing edge weights default to 1.
+    """
     import networkx as nx
 
     missing = [n for n in set(entry_nodes) | set(target_nodes) if n not in graph]
@@ -64,10 +73,38 @@ def attack_paths(graph, entry_nodes, target_nodes, k: int = 5):
             if entry == target or entry not in graph or target not in graph:
                 continue
             try:
-                paths.extend(islice(nx.shortest_simple_paths(graph, entry, target), k))
+                paths.extend(islice(
+                    nx.shortest_simple_paths(graph, entry, target, weight=weight), k))
             except nx.NetworkXNoPath:
                 continue
-    return sorted(paths, key=len)
+    return paths
+
+
+def _path_cost(graph, path) -> float:
+    return sum(graph[u][v].get("weight", 1.0) for u, v in zip(path, path[1:]))
+
+
+def segmentation_violations(architecture) -> list[dict]:
+    """Physical connections the policy permits that cross the IT/OT boundary directly.
+
+    A permitted edge from an enterprise/internet asset straight into an OT zone skips
+    the DMZ — the segmentation control that should mediate it. These are the
+    architecture's most dangerous allowances (e.g. the Oldsmar remote-access pattern).
+    """
+    policy = architecture.segmentation
+    seen, out = set(), []
+    for a in architecture.assets.values():
+        for other in a.connections:
+            b = architecture.assets[other]
+            key = frozenset({a.name, b.name})
+            if key in seen:
+                continue
+            za, zb = a.level.name, b.level.name
+            crosses = (za in IT_ZONES and zb in OT_ZONES) or (zb in IT_ZONES and za in OT_ZONES)
+            if crosses and (policy.permits(a, b) or policy.permits(b, a)):
+                seen.add(key)
+                out.append({"from": a.name, "to": b.name, "from_zone": za, "to_zone": zb})
+    return out
 
 
 def chokepoints(graph) -> dict:
@@ -179,11 +216,12 @@ def path_findings(graph, entry_nodes, target_nodes, scores=None, k=5) -> list[di
         {
             "path": path,
             "length": len(path) - 1,  # edges traversed
+            "cost": round(_path_cost(graph, path), 1),  # summed hop difficulty
             "target": path[-1],
             "target_band": scores.get(path[-1], {}).get("band"),
             "target_severity": scores.get(path[-1], {}).get("severity"),
         }
         for path in attack_paths(graph, entry_nodes, target_nodes, k=k)
     ]
-    findings.sort(key=lambda f: (f["length"], -(f["target_severity"] or 0)))
+    findings.sort(key=lambda f: (f["cost"], f["length"], -(f["target_severity"] or 0)))
     return findings
