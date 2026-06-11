@@ -40,8 +40,9 @@ ignore = ["E741"]  # ambiguous var name (l/I used for level helpers)
 
 [tool.mypy]
 python_version = "3.10"
-ignore_missing_imports = true   # networkx/yaml/requests/matplotlib/numpy ship no stubs
-check_untyped_defs = false      # this is intentionally a lightly-typed codebase
+ignore_missing_imports = true              # third-party libs without stubs (not-found)
+disable_error_code = ["import-untyped"]    # ...and those installed but unstubbed (yaml, etc.)
+check_untyped_defs = false                 # this is intentionally a lightly-typed codebase
 warn_return_any = false
 
 [tool.pytest.ini_options]

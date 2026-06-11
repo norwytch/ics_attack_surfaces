@@ -1,5 +1,7 @@
 # Cyber-Physical Attack Surface Modeler
 
+[![CI](https://github.com/norwytch/ics_attack_surfaces/actions/workflows/ci.yml/badge.svg)](https://github.com/norwytch/ics_attack_surfaces/actions/workflows/ci.yml)
+
 Threat modeling and vulnerability prioritization for ICS/SCADA reference architectures.
 
 Models the attack surface of an industrial control system, maps components to MITRE
