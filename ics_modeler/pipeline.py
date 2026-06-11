@@ -36,6 +36,8 @@ def build(arch_path="data/reference_architecture.yaml",
     rules = load_rules(rules_path)
 
     # ATT&CK data is optional (gitignored download); names degrade gracefully without it.
+    from .data_sources import load_cve_snapshot
+
     attack = None
     if Path(attack_path).exists():
         from .data_sources import load_attack_ics
@@ -50,6 +52,12 @@ def build(arch_path="data/reference_architecture.yaml",
         kev = fetch_kev_catalog()
 
     mapped = map_architecture(arch, rules, attack=attack, kev=kev, fetch_cves=fetch_cves)
+    if not fetch_cves:
+        # offline default: attach CVEs from the committed snapshot so the briefing shows
+        # real CVEs + KEV flags without a live NVD call (run `--cves` to refresh live)
+        snapshot = load_cve_snapshot()
+        for name, asset in arch.assets.items():
+            mapped[name]["cves"] = snapshot.get(asset.cpe_hint() or "", [])
     graph = arch.graph()                     # physical topology: diagram + blast-radius impact
     reach = arch.reachability_graph()        # policy-respecting: attack paths + chokepoints
     cves_by_asset = {n: m["cves"] for n, m in mapped.items()}

@@ -3,12 +3,12 @@ import os
 
 import pytest
 
-from src.assets import load_architecture
-from src.mapping import load_rules, map_architecture, validate_rules_against_attack
-from src.pipeline import build
-from src.report import generate_briefing, plot_risk_matrix
-from src.scoring import chokepoints, path_findings, score_architecture
-from src.trends import load_campaigns, map_campaigns_to_exposure
+from ics_modeler.assets import load_architecture
+from ics_modeler.mapping import load_rules, map_architecture, validate_rules_against_attack
+from ics_modeler.pipeline import build
+from ics_modeler.report import generate_briefing, plot_risk_matrix
+from ics_modeler.scoring import chokepoints, path_findings, score_architecture
+from ics_modeler.trends import load_campaigns, map_campaigns_to_exposure
 
 ARCH_PATH = "data/reference_architecture.yaml"
 RULES_PATH = "data/mapping_rules.yaml"
@@ -33,8 +33,20 @@ def test_campaign_correlation_matches_shared_techniques():
     c1_assets = {m["asset"] for m in by_id["c1"]["matches"]}
     assert "interlocking_controller" in c1_assets
     assert by_id["c2"]["matches"] == []
-    # sorted most-hit first
+    # sorted by coverage (strongest first)
     assert out[0]["id"] == "c1"
+
+
+def test_campaign_confidence_reflects_coverage():
+    arch, mapped = _mapped()
+    # single exposed technique -> full coverage, High confidence
+    full = map_campaigns_to_exposure(mapped, [{"id": "f", "name": "F",
+                                               "techniques": ["T0843"]}])[0]
+    assert full["coverage"] == 1.0 and full["confidence"] == "High"
+    # 1 of 5 techniques exposed -> low coverage, demoted to Low confidence
+    partial = map_campaigns_to_exposure(mapped, [{"id": "p", "name": "P",
+        "techniques": ["T0843", "T9990", "T9991", "T9992", "T9993"]}])[0]
+    assert partial["coverage"] == 0.2 and partial["confidence"] == "Low"
 
 
 @pytest.mark.skipif(
@@ -42,7 +54,7 @@ def test_campaign_correlation_matches_shared_techniques():
     reason="ATT&CK bundle not downloaded (run data_sources.fetch_attack_ics())",
 )
 def test_campaign_techniques_are_current():
-    from src.data_sources import load_attack_ics
+    from ics_modeler.data_sources import load_attack_ics
 
     attack = load_attack_ics(ATTACK_PATH)
     campaigns = load_campaigns(TRENDS_PATH)
@@ -61,7 +73,8 @@ def test_generate_briefing_has_core_sections(tmp_path):
     dest = tmp_path / "briefing.md"
     text = generate_briefing(arch, mapped, scores, paths, chokes, campaigns, [], str(dest))
     for heading in ("Executive summary", "Asset inventory", "Attack-path findings",
-                    "Segmentation findings", "Threat-trend mapping", "mitigation recommendations"):
+                    "Segmentation findings", "Threat-trend mapping",
+                    "mitigation recommendations", "Scope & limitations"):
         assert heading in text
     assert dest.exists()
 
@@ -75,7 +88,7 @@ def test_plot_writes_png(tmp_path):
 
 
 def test_pipeline_build_offline(tmp_path):
-    dest = build(out_dir=str(tmp_path), fetch_cves=False)
+    build(out_dir=str(tmp_path), fetch_cves=False)
     assert (tmp_path / "briefing.md").exists()
     assert (tmp_path / "figures" / "network.png").exists()
     assert (tmp_path / "figures" / "risk_matrix.png").exists()
@@ -88,3 +101,18 @@ def test_pipeline_build_second_architecture(tmp_path):
     briefing = (tmp_path / "briefing.md").read_text()
     assert "Water Treatment" in briefing
     assert (tmp_path / "figures" / "network.png").exists()
+
+
+def test_cve_snapshot_present_and_nonempty():
+    from ics_modeler.data_sources import load_cve_snapshot
+
+    snap = load_cve_snapshot()
+    assert snap, "committed CVE snapshot empty — run python -m scripts.build_cve_snapshot"
+    assert any(cves for cves in snap.values()), "snapshot has no CVEs for any product"
+
+
+def test_default_offline_briefing_shows_real_cves(tmp_path):
+    # the flagship feature must work WITHOUT --cves, via the committed snapshot
+    build(arch_path="data/water_treatment.yaml", out_dir=str(tmp_path), fetch_cves=False)
+    briefing = (tmp_path / "briefing.md").read_text()
+    assert "CVE-" in briefing, "default briefing should attach real CVEs from the snapshot"

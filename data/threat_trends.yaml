@@ -23,10 +23,10 @@ campaigns:
     techniques: [T0843, T0889, T0821, T0835, T0831]
     # Program Download · Modify Program · Modify Controller Tasking ·
     # Manipulate I/O Image · Manipulation of Control
-    sources:
-      - "https://us-cert.cisa.gov/ics/advisories/ICSA-10-272-01"                     # CISA ICS advisory
-      - "https://docs.broadcom.com/doc/security-response-w32-stuxnet-dossier-11-en"  # Symantec W32.Stuxnet Dossier
-      - "https://www.langner.com/wp-content/uploads/2017/03/to-kill-a-centrifuge.pdf" # Langner technical analysis
+    sources:  # verified 2026-06-11 — see data/citation_verification.md
+      - "https://docs.broadcom.com/doc/security-response-w32-stuxnet-dossier-11-en"  # Symantec W32.Stuxnet Dossier (content verified)
+      - "https://www.cisa.gov/ics/advisories/ICSA-10-272-01"                          # CISA ICS advisory (canonical; blocks automated fetch)
+      # Langner "To Kill a Centrifuge" dropped — original URL rotted (langner.com -> OTbase) with no archive snapshot
 
   - id: triton-trisis
     name: "TRITON / TRISIS"
@@ -41,10 +41,10 @@ campaigns:
     techniques: [T0880, T0858, T0843, T0845, T0821]
     # Loss of Safety · Change Operating Mode · Program Download ·
     # Program Upload · Modify Controller Tasking
-    sources:
-      - "https://www.fireeye.com/blog/threat-research/2017/12/attackers-deploy-new-ics-attack-framework-triton.html"  # FireEye/Mandiant disclosure
-      - "https://dragos.com/blog/trisis/TRISIS-01.pdf"  # Dragos TRISIS report
-      - "https://ics-cert.us-cert.gov/sites/default/files/documents/MAR-17-352-01%20HatMan%20-%20Safety%20System%20Targeted%20Malware%20%28Update%20B%29.pdf"  # DHS CISA MAR (HatMan)
+    sources:  # verified 2026-06-11 — see data/citation_verification.md
+      - "https://cloud.google.com/blog/topics/threat-intelligence/attackers-deploy-new-ics-attack-framework-triton/"  # Mandiant/FireEye disclosure, now Google Cloud (content verified)
+      - "https://web.archive.org/web/20181125074854/https://dragos.com/blog/trisis/TRISIS-01.pdf"  # Dragos TRISIS (archived; original 404)
+      - "https://www.cisa.gov/sites/default/files/documents/MAR-17-352-01%20HatMan%20-%20Safety%20System%20Targeted%20Malware%20%28Update%20B%29.pdf"  # CISA MAR HatMan (host updated; blocks automated fetch)
 
   - id: industroyer
     name: "Industroyer / CrashOverride"
@@ -59,6 +59,6 @@ campaigns:
     techniques: [T1692.001, T0813, T0816, T0809, T0831]
     # Command Message · Denial of Control · Device Restart/Shutdown ·
     # Data Destruction · Manipulation of Control
-    sources:
-      - "https://www.welivesecurity.com/wp-content/uploads/2017/06/Win32_Industroyer.pdf"  # ESET Win32/Industroyer
-      - "https://dragos.com/blog/crashoverride/CrashOverride-01.pdf"                        # Dragos CRASHOVERRIDE
+    sources:  # verified 2026-06-11 — see data/citation_verification.md
+      - "https://web-assets.esetstatic.com/wls/2017/06/Win32_Industroyer.pdf"  # ESET Win32/Industroyer (host updated; reachable)
+      - "https://web.archive.org/web/20250820034220/https://www.dragos.com/wp-content/uploads/CrashOverride-01.pdf"  # Dragos CRASHOVERRIDE (archived; original 404)

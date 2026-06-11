@@ -34,7 +34,7 @@ def generate_briefing(architecture, mapped, scores, paths, chokepoints_,
 
     # Executive summary -----------------------------------------------------
     L.append("## Executive summary\n")
-    bands = {}
+    bands: dict = {}
     for _, s in scores.items():
         bands[s["band"]] = bands.get(s["band"], 0) + 1
     band_line = ", ".join(f"{bands[b]} {b}" for b in
@@ -120,12 +120,19 @@ def generate_briefing(architecture, mapped, scores, paths, chokepoints_,
 
     # Threat-trend mapping --------------------------------------------------
     L.append("## Threat-trend mapping (real campaigns vs. this architecture)\n")
+    L.append("_Confidence = fraction of each campaign's characteristic techniques this "
+             "architecture exposes. A match indicates **shared techniques**, not that the "
+             "architecture is vulnerable to that specific malware._\n")
     for c in campaign_matches:
         if not c["matches"]:
             continue
-        hit = ", ".join(m["asset"] for m in c["matches"])
-        L.append(f"- **{c['name']}** ({c.get('year')}, {c.get('sector')}): "
-                 f"shares {', '.join(c['matched_techniques'])} with {hit}.")
+        L.append(f"- **{c['name']}** ({c.get('year')}, {c.get('sector')}) — "
+                 f"**{c['confidence']} confidence** "
+                 f"({int(c['coverage'] * 100)}% technique coverage: "
+                 f"{', '.join(c['matched_techniques'])})")
+        top_assets = ", ".join(f"{m['asset']} ({int(m['fraction'] * 100)}%)"
+                               for m in c["matches"][:4])
+        L.append(f"    - most-exposed assets: {top_assets}")
     L.append("")
 
     # Mitigations -----------------------------------------------------------
@@ -139,6 +146,29 @@ def generate_briefing(architecture, mapped, scores, paths, chokepoints_,
     L.append("- `figures/network.png` — asset graph (color = Purdue level, size = impact)")
     L.append("- `figures/heatmap.png` — technique exposure matrix")
     L.append("- `figures/risk_matrix.png` — likelihood × impact, one point per asset\n")
+
+    # Scope & limitations ---------------------------------------------------
+    L.append("## Scope & limitations\n")
+    L.append("Stating what this analysis does *not* cover is deliberate — it is a "
+             "static, model-based assessment, not a live audit.\n")
+    L.append("- **Model, not network.** Analyzes a hand-authored architecture model — no "
+             "traffic capture, scanning, or real device configuration is involved.")
+    L.append("- **Attack paths are reachability, not exploits.** A path assumes a "
+             "policy-permitted edge to an exploitable (e.g. unauthenticated) service is "
+             "traversable; it does not model exploit reliability, chaining difficulty, or "
+             "detection/response.")
+    L.append("- **Segmentation is zone/protocol-level.** Boundaries are matched on the "
+             "destination's protocols, not full firewall-rule semantics (5-tuples, NAT, "
+             "deep inspection).")
+    L.append("- **Scores are a documented heuristic.** The 800-30 Table I-2 combination is "
+             "from the standard; the factor weights are engineering judgment, validated "
+             "robust to ±20% perturbation for the *priority ranking* but not for "
+             "fine-grained ordering among same-band assets (see `data/risk_rubric.md`).")
+    L.append("- **CVEs match by product, point-in-time.** Matched by CPE vendor/product "
+             "across versions (not pinned to exact firmware); KEV membership and CVE lists "
+             "drift, so the snapshot should be refreshed.")
+    L.append("- **Trend matches mean shared techniques**, not vulnerability to the specific "
+             "malware. Technique mapping is rule-based and not exhaustive of ATT&CK for ICS.\n")
 
     text = "\n".join(L)
     Path(dest).parent.mkdir(parents=True, exist_ok=True)

@@ -22,7 +22,7 @@ CVE/KEV enrichment is opt-in (`--cves`, requires network).
 
 ```
 data/    Reference architecture, mapping rules, threat trends, scoring rubric (all data, cited)
-src/     assets · mapping · scoring · trends · report · data_sources
+ics_modeler/ assets · mapping · scoring · trends · report · data_sources
 tests/   Unit tests (rule matching, schema validation)
 results/ Generated briefing + figures
 ```
@@ -31,12 +31,27 @@ results/ Generated briefing + figures
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python -m pytest tests/                       # run the tests
-python -m src.pipeline                         # transit-signaling model (default)
-python -m src.pipeline --arch data/water_treatment.yaml --out results_water   # water-treatment model
-python -m src.pipeline --cves                  # ...with live NVD CVE + CISA KEV enrichment
+pip install -e ".[dev]"                        # installs the package + dev tooling
+#   (or: pip install -r requirements.lock      # exact pinned versions)
+pytest                                          # run the tests
+ics-modeler                                     # transit-signaling model (default)
+ics-modeler --arch data/water_treatment.yaml --out results_water   # water-treatment model
+ics-modeler --cves                              # ...with live NVD CVE + CISA KEV enrichment
 ```
+
+`ics-modeler` is the installed console command; `python -m ics_modeler.pipeline` is
+equivalent if you'd rather not install.
+
+## Development
+
+```bash
+ruff check ics_modeler scripts tests    # lint
+mypy ics_modeler                         # type-check
+pytest                                   # tests
+```
+
+CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs all three on Python
+3.10–3.12 for every push and PR.
 
 Two reference architectures ship with the project — a transit-signaling plant
 ([data/reference_architecture.yaml](data/reference_architecture.yaml)) and a municipal

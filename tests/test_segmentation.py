@@ -1,6 +1,6 @@
 """Tests for segmentation-aware reachability and attack paths (roadmap item #2)."""
-from src.assets import Architecture, Asset, PurdueLevel, Segmentation, load_architecture
-from src.scoring import attack_paths, segmentation_violations
+from ics_modeler.assets import Architecture, Asset, PurdueLevel, Segmentation, load_architecture
+from ics_modeler.scoring import attack_paths, segmentation_violations
 
 
 def _mini(policy: Segmentation) -> Architecture:

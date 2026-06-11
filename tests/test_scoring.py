@@ -1,8 +1,8 @@
 """Tests for NIST 800-30 scoring and attack-path findings."""
 import pytest
 
-from src.assets import load_architecture
-from src.scoring import (
+from ics_modeler.assets import Architecture, Asset, PurdueLevel, load_architecture
+from ics_modeler.scoring import (
     BAND_ORDER,
     band,
     path_findings,
@@ -15,6 +15,71 @@ from src.scoring import (
 
 ARCH_PATH = "data/reference_architecture.yaml"
 WATER_PATH = "data/water_treatment.yaml"
+
+# NIST SP 800-30 Rev.1 Table I-2, written out independently of the code's RISK_MATRIX
+# so this validates the table rather than re-reading the same constant.
+# rows = likelihood band, cols = impact band, both Very Low -> Very High.
+_TABLE_I2 = [
+    ["Very Low", "Very Low", "Very Low", "Low", "Low"],
+    ["Very Low", "Low", "Low", "Low", "Moderate"],
+    ["Very Low", "Low", "Moderate", "Moderate", "High"],
+    ["Very Low", "Low", "Moderate", "High", "Very High"],
+    ["Very Low", "Low", "Moderate", "High", "Very High"],
+]
+_BAND_CENTERS = [10, 30, 50, 70, 90]  # a representative score inside each band
+
+
+def _line_graph():
+    """entry(L4) — mid(L2) — target(L1), all unauthenticated, no CVEs. Deterministic."""
+    assets = {
+        "entry": Asset("entry", PurdueLevel.L4_ENTERPRISE, "workstation", connections=["mid"]),
+        "mid": Asset("mid", PurdueLevel.L2_SUPERVISORY, "SCADA_server",
+                     connections=["entry", "target"]),
+        "target": Asset("target", PurdueLevel.L1_CONTROL, "PLC", connections=["mid"]),
+    }
+    return Architecture(assets=assets, entry_nodes=["entry"], target_nodes=["target"])
+
+
+def test_risk_matrix_matches_table_i2_all_25_cells():
+    for li, lscore in enumerate(_BAND_CENTERS):
+        for ii, iscore in enumerate(_BAND_CENTERS):
+            assert risk_band(lscore, iscore) == _TABLE_I2[li][ii], (
+                f"L={lscore} I={iscore}: got {risk_band(lscore, iscore)}, "
+                f"expected {_TABLE_I2[li][ii]}"
+            )
+
+
+def test_score_values_are_pinned():
+    # hand-computed from the documented weights/decay; guards against silent drift.
+    arch = _line_graph()
+    g = arch.graph()
+    # likelihood = 0.4*exposure + 0.3*auth(=100, all unauth) + 0.3*0 ; exposure = 100*0.7^d
+    assert score_likelihood(arch.assets["entry"], g, ["entry"]) == 70.0   # d=0 -> 100
+    assert score_likelihood(arch.assets["mid"], g, ["entry"]) == 58.0     # d=1 -> 70
+    assert score_likelihood(arch.assets["target"], g, ["entry"]) == 49.6  # d=2 -> 49
+    # impact = 0.6*criticality + 0.4*blast_radius
+    assert score_impact(arch.assets["entry"], g) == 52.0    # crit 20, blast 100
+    assert score_impact(arch.assets["mid"], g) == 56.0      # crit 60, blast 50
+    assert score_impact(arch.assets["target"], g) == 60.0   # crit 100, blast 0
+
+
+def test_likelihood_monotonic_in_exposure():
+    # closer to the entry node => never lower likelihood (other factors equal)
+    arch = _line_graph()
+    g = arch.graph()
+    le = score_likelihood(arch.assets["entry"], g, ["entry"])
+    lm = score_likelihood(arch.assets["mid"], g, ["entry"])
+    lt = score_likelihood(arch.assets["target"], g, ["entry"])
+    assert le >= lm >= lt
+
+
+def test_authentication_never_raises_likelihood():
+    arch = _line_graph()
+    g = arch.graph()
+    unauth = score_likelihood(arch.assets["mid"], g, ["entry"])
+    arch.assets["mid"].authenticated = True
+    auth = score_likelihood(arch.assets["mid"], g, ["entry"])
+    assert auth < unauth
 
 
 def test_bands_cover_full_range():

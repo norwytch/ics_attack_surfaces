@@ -67,7 +67,7 @@ def attack_paths(graph, entry_nodes, target_nodes, k: int = 5, weight: str | Non
     if missing:
         warnings.warn(f"attack_paths: nodes not in graph, skipped: {sorted(missing)}",
                       stacklevel=2)
-    paths = []
+    paths: list = []
     for entry in entry_nodes:
         for target in target_nodes:
             if entry == target or entry not in graph or target not in graph:
@@ -81,7 +81,7 @@ def attack_paths(graph, entry_nodes, target_nodes, k: int = 5, weight: str | Non
 
 
 def _path_cost(graph, path) -> float:
-    return sum(graph[u][v].get("weight", 1.0) for u, v in zip(path, path[1:]))
+    return sum(graph[u][v].get("weight", 1.0) for u, v in zip(path, path[1:], strict=False))
 
 
 def segmentation_violations(architecture) -> list[dict]:
@@ -153,7 +153,9 @@ def _downstream(graph, name) -> set:
     An edge is 'downstream' only toward a strictly lower Purdue level (toward the
     physical process), so blast radius measures what a compromise threatens below it.
     """
-    level = lambda n: graph.nodes[n]["asset"].level.value
+    def level(n):
+        return graph.nodes[n]["asset"].level.value
+
     seen, stack = set(), [name]
     while stack:
         cur = stack.pop()
@@ -228,7 +230,7 @@ def _perturbed_weights(base: dict, perturb: float) -> list:
     keys = list(base)
     out = []
     for combo in product((1 - perturb, 1.0, 1 + perturb), repeat=len(keys)):
-        scaled = {k: base[k] * f for k, f in zip(keys, combo)}
+        scaled = {k: base[k] * f for k, f in zip(keys, combo, strict=True)}
         total = sum(scaled.values())
         out.append({k: v / total for k, v in scaled.items()})
     return out

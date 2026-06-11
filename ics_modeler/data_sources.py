@@ -22,6 +22,7 @@ KEV_URL = (
     "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
 )
 NVD_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
+NVD_CPE_URL = "https://services.nvd.nist.gov/rest/json/cpes/2.0"
 _TIMEOUT = 30
 
 
@@ -101,42 +102,83 @@ def _cvss(cve: dict) -> tuple[float | None, str]:
     return None, ""
 
 
+def _nvd_get(url: str, params: dict, api_key: str | None = None, retries: int = 3) -> dict:
+    """GET an NVD endpoint, respecting the rate limit and retrying transient failures."""
+    headers = {}
+    key = api_key or os.environ.get("NVD_API_KEY")
+    if key:
+        headers["apiKey"] = key
+    last: Exception | None = None
+    for attempt in range(retries):
+        if not key:
+            time.sleep(6)  # NVD asks ~6s between unauthenticated requests
+        try:
+            resp = requests.get(url, params=params, headers=headers, timeout=_TIMEOUT)
+            resp.raise_for_status()
+            return resp.json()
+        except (requests.Timeout, requests.ConnectionError, requests.HTTPError) as e:
+            last = e
+            time.sleep(2 * (attempt + 1))  # back off before retrying
+    raise last if last is not None else RuntimeError("NVD request failed")
+
+
+def _resolve_one(keyword: str, cache_dir: str, api_key: str | None) -> str | None:
+    """Single CPE-dictionary lookup for an exact keyword (cached). Top match -> base."""
+    cache = Path(cache_dir) / f"cpe_{_slug(keyword)}.json"
+    if cache.exists():
+        data = json.loads(cache.read_text(encoding="utf-8"))
+    else:
+        data = _nvd_get(NVD_CPE_URL, {"keywordSearch": keyword, "resultsPerPage": 5}, api_key)
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        cache.write_text(json.dumps(data), encoding="utf-8")
+    products = data.get("products", [])
+    if not products:
+        return None
+    return ":".join(products[0]["cpe"]["cpeName"].split(":")[:5])  # cpe:2.3:part:vendor:product
+
+
+def resolve_cpe_base(keyword: str, cache_dir: str = CACHE_DIR,
+                     api_key: str | None = None) -> str | None:
+    """Resolve a product keyword to its CPE base `cpe:2.3:<part>:<vendor>:<product>`.
+
+    Queries the NVD CPE dictionary (precise — far better than a free-text CVE search).
+    Over-specific names (e.g. a catalog number like "ControlLogix 1756-L61") often miss,
+    so this falls back by dropping trailing tokens until the dictionary matches. Cached.
+    """
+    words = keyword.split()
+    for end in range(len(words), 1, -1):  # full keyword, then progressively shorter
+        base = _resolve_one(" ".join(words[:end]), cache_dir, api_key)
+        if base:
+            return base
+    return None
+
+
 def lookup_cves_by_cpe(
     cpe_hint: str | None,
     kev: set[str] | None = None,
     cache_dir: str = CACHE_DIR,
-    limit: int = 20,
+    limit: int = 10,
     api_key: str | None = None,
 ) -> list[dict]:
-    """Return CVEs for a product. Returns [] when cpe_hint is None.
+    """Return the worst CVEs affecting a product, matched by CPE. [] if cpe_hint is None.
 
-    NVD is keyed by CPE; exact CPE strings are fiddly, so this first cut uses NVD's
-    forgiving keywordSearch over the asset's vendor+product (the version part of the
-    hint is dropped — it narrows results too aggressively for keyword matching).
-    Results are cached per product under data/cache/. Flags CVEs present in `kev`.
-
-    TODO: tighten to exact `cpeName=cpe:2.3:...` matching once a CPE map is built.
+    Resolves the asset's vendor+product to a CPE base via the NVD CPE dictionary, then
+    queries CVEs by `virtualMatchString` on that base (precise vendor/product match, all
+    versions). Results are cached and sorted by CVSS; the top `limit` are returned with
+    CISA-KEV flags.
     """
     if not cpe_hint:
         return []
-    keyword = " ".join(cpe_hint.split(":")[:2]).strip()  # vendor + product, drop version
-    if not keyword:
+    keyword = " ".join(cpe_hint.split(":")[:2]).strip()  # vendor + product
+    base = resolve_cpe_base(keyword, cache_dir, api_key)
+    if not base:
         return []
 
-    cache = Path(cache_dir) / f"nvd_{_slug(keyword)}.json"
+    cache = Path(cache_dir) / f"nvd_{_slug(base)}.json"
     if cache.exists():
         raw = json.loads(cache.read_text(encoding="utf-8"))
     else:
-        params = {"keywordSearch": keyword, "resultsPerPage": limit}
-        headers = {}
-        key = api_key or os.environ.get("NVD_API_KEY")
-        if key:
-            headers["apiKey"] = key
-        else:
-            time.sleep(6)  # NVD asks ~6s between unauthenticated requests
-        resp = requests.get(NVD_URL, params=params, headers=headers, timeout=_TIMEOUT)
-        resp.raise_for_status()
-        raw = resp.json()
+        raw = _nvd_get(NVD_URL, {"virtualMatchString": base, "resultsPerPage": 50}, api_key)
         cache.parent.mkdir(parents=True, exist_ok=True)
         cache.write_text(json.dumps(raw), encoding="utf-8")
 
@@ -157,4 +199,12 @@ def lookup_cves_by_cpe(
             "known_exploited": cve_id in kev,
             "description": desc,
         })
-    return out
+    # worst first (KEV, then CVSS); keep the top `limit`
+    out.sort(key=lambda c: (c["known_exploited"], c["cvss"] or 0), reverse=True)
+    return out[:limit]
+
+
+def load_cve_snapshot(path: str = "data/cve_snapshot.json") -> dict:
+    """Load the committed CVE snapshot {cpe_hint: [cves]} used for offline briefings."""
+    p = Path(path)
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}

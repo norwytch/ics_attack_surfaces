@@ -3,8 +3,8 @@ import os
 
 import pytest
 
-from src.assets import Architecture, Asset, PurdueLevel, load_architecture
-from src.mapping import (
+from ics_modeler.assets import Architecture, Asset, PurdueLevel, load_architecture
+from ics_modeler.mapping import (
     load_rules,
     map_architecture,
     rule_matches,
@@ -117,7 +117,7 @@ def test_load_rules_rejects_unknown_when_field(tmp_path):
     reason="ATT&CK bundle not downloaded (run data_sources.fetch_attack_ics())",
 )
 def test_rules_reference_current_techniques():
-    from src.data_sources import load_attack_ics
+    from ics_modeler.data_sources import load_attack_ics
 
     attack = load_attack_ics(ATTACK_PATH)
     rules = load_rules(RULES_PATH)

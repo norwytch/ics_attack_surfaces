@@ -77,30 +77,55 @@ its own weight choices.
 
 ## Tier 2 — Make the strong features actually strong
 
-### 4. CVE matching: exact CPE, and enrichment on by default
-**Problem.** The flagship "real data" feature is the weakest code: `lookup_cves_by_cpe` in
-[src/data_sources.py](src/data_sources.py) uses NVD `keywordSearch` over vendor+product
-(self-labeled approximate), which yields false positives and misses CPE-specific matches.
-Worse, it is opt-in (`--cves`), so the **default briefing ships with an empty CVE
-section** — the best feature doesn't run unless you know to ask.
-**Plan.** Build proper CPE 2.3 strings (`cpe:2.3:a:vendor:product:version:...`) and query
-NVD by `cpeName`/`virtualMatchString`. Maintain a small vendor/product→CPE map for the
-modeled gear. Commit a cached enriched run so the default briefing shows real CVEs + KEV
-flags without a live call.
-**Done when.** The default `python -m src.pipeline` briefing contains real, correctly
-matched CVEs with KEV flags, sourced from cache.
+### 4. CVE matching: exact CPE, and enrichment on by default — DONE
+**Problem.** CVE matching used NVD `keywordSearch` over free text (approximate, false
+positives) and was opt-in, so the default briefing shipped with an empty CVE section.
+**What was done.** `resolve_cpe_base` now resolves each asset's vendor+product to a CPE
+base via the **NVD CPE dictionary** (with a trailing-token fallback for over-specific
+catalog names like "ControlLogix 1756-L61"), then CVEs are queried by `virtualMatchString`
+on that base — precise vendor/product matching, sorted by KEV-then-CVSS. Added
+`scripts/build_cve_snapshot.py`, which distills a committed `data/cve_snapshot.json`
+(CPE-matched, KEV-flagged) for every product in both plants. The pipeline loads that
+snapshot **by default (offline)**; `--cves` refreshes live. Added retry/backoff to the NVD
+client for transient timeouts.
+**Done when — met.** `python -m ics_modeler.pipeline` (no flags) now shows real CVEs with CVSS and
+KEV flags — e.g. the water plant's `dosing_plc` carries CVE-2021-22681 (9.8) flagged KEV,
+and that signal flows into the likelihood score. Tests assert the snapshot is non-empty and
+the default briefing attaches CVEs. Full suite (32) green.
 
-### 5. Confidence-weighted threat-trend correlation
-**Problem.** [src/trends.py](src/trends.py) is a set intersection: sharing ≥1 technique
-with a campaign lists the asset under it. Sharing "Program Download" with Stuxnet does not
-make a transit plant Stuxnet-vulnerable, but the briefing presents a one-technique overlap
-with the same weight as a real finding.
-**Plan.** Score each correlation (fraction of the campaign's characteristic techniques the
-asset exposes, weighted by technique criticality), apply a threshold, and present a
-confidence level instead of a binary match. Say explicitly what a match does and does not
-imply.
-**Done when.** Correlations carry a score and a stated threshold, and weak single-technique
-overlaps are demoted or labeled low-confidence.
+### 5. Confidence-weighted threat-trend correlation — DONE
+**Problem.** Correlation was a set intersection — sharing ≥1 technique listed the asset under
+the campaign, presenting a one-technique overlap with the same weight as a real finding.
+**What was done.** `map_campaigns_to_exposure` now computes **coverage** (the fraction of a
+campaign's characteristic techniques the architecture exposes) and a derived **confidence**
+band (High ≥0.6 / Moderate ≥0.4 / Low). Per-asset matches carry their own `fraction`. The
+briefing prints confidence and an explicit caveat that a match means *shared techniques, not
+vulnerability to the specific malware*.
+**Done when — met.** On the water plant, Stuxnet reads High (60%), TRITON Moderate (40%), and
+Industroyer's single-technique overlap is demoted to **Low (20%)** — exactly the weak
+finding that used to look equal to a real one. `test_campaign_confidence_reflects_coverage`
+pins the behaviour.
+
+### 6. Verified citations + an explicit scope/limitations section — DONE
+**Problem.** Threat-trend citations were unverified, and the briefing spoke with uniform
+confidence with no statement of blind spots.
+**What was done.** (a) Automated-fetched and content-checked every citation; recorded results
+in [data/citation_verification.md](data/citation_verification.md). Verification found real
+link rot in MITRE's references — the FireEye/Triton URL now lives on Google Cloud (content
+re-verified there), two Dragos PDFs 404'd (replaced with Wayback snapshots), Langner's report
+fully rotted (dropped; two solid Stuxnet sources remain), and CISA host URLs were updated.
+(b) Added a **Scope & limitations** section to every briefing — model-not-network, paths-are-
+reachability-not-exploits, heuristic weights, point-in-time CVEs, trend-matches-mean-shared-
+techniques.
+**Done when — met (honestly).** Every citation was checked and the log records the method and
+finding; two CISA government URLs return 403 to bots and are flagged for a human eyeball
+before external publication. The briefing now ends with a limitations section.
+
+---
+
+**Tier 2 complete.** The flagship CVE feature works precisely and by default; trend
+correlation carries confidence instead of false equivalence; and citations are verified
+(with link rot fixed) while the briefing states its own blind spots.
 
 ### 6. Verified citations + an explicit scope/limitations section
 **Problem.** The threat-trend summaries and citations are not independently verified (a note
@@ -116,28 +141,41 @@ confidence levels.
 
 ## Tier 3 — Engineering hygiene
 
-### 7. Packaging and configuration
-**Problem.** No `pyproject.toml`; not installable as a package; `src.` imports assume
-run-from-repo-root; `data/` and `results/` paths are hardcoded.
-**Plan.** Add `pyproject.toml`, make it `pip install -e .`-able with a console entry point,
-and route paths through config/CLI args rather than literals.
-**Done when.** `pip install -e . && ics-modeler --arch ...` works from any directory.
+### 7. Packaging and configuration — DONE
+**Problem.** No `pyproject.toml`; not installable; `src.` imports; hardcoded paths.
+**What was done.** Renamed the package `src/` → `ics_modeler/` (a real importable name).
+Added `pyproject.toml` with accurate dependencies (dropped unused `pandas`/`graphviz`,
+added the previously-undeclared `numpy`), a `dev` extra, and an `ics-modeler` console entry
+point. `pip install -e ".[dev]"` works; the CLI takes `--arch`/`--rules`/`--trends`/`--out`
+so paths are arguments, not literals.
+**Done when — met.** `ics-modeler --arch data/water_treatment.yaml` runs from an installed
+package.
 
-### 8. CI, linting, type-checking, and a lockfile
-**Problem.** No CI, no linter/formatter/type-checker config despite type hints everywhere,
-and `requirements.txt` has bounds but no lockfile, so "reproducible" is claimed not proven.
-**Plan.** Add ruff + mypy + pytest in a CI workflow on push/PR, and pin a lockfile.
-**Done when.** CI is green on a clean checkout and fails on a lint/type/test regression.
+### 8. CI, linting, type-checking, and a lockfile — DONE
+**Problem.** No CI, no linter/type-checker config, no lockfile.
+**What was done.** Added ruff + mypy config in `pyproject.toml`, a `requirements.lock`
+(full pinned closure), and [.github/workflows/ci.yml](.github/workflows/ci.yml) running
+ruff → mypy → pytest on Python 3.10–3.12. Fixed every issue the tools surfaced — including
+two real ones: a `raise None` path in the NVD retry loop and a `top` variable reused as both
+a list and a str in the report.
+**Done when — met.** Lint, type-check, and tests are all green locally; CI enforces them.
 
-### 9. Deepen the tests beyond smoke checks
-**Problem.** The 19 tests are mostly structural ("briefing contains these headings",
-"scores in range"). Few pin actual values or guard the scoring logic against regression;
-the Table I-2 matrix gets ~4 of 25 cells checked.
-**Plan.** Add value-pinning tests for representative scores, full Table I-2 coverage, and
-property-based tests (e.g. monotonicity: more exposure never lowers likelihood). Add a
-golden-file test for the generated briefing.
-**Done when.** Scoring changes that alter rankings break a test, and the matrix is fully
-covered.
+### 9. Deepen the tests beyond smoke checks — DONE
+**Problem.** Tests were mostly structural; few pinned values; the Table I-2 matrix had ~4
+of 25 cells checked.
+**What was done.** Added: a full **Table I-2** test (all 25 cells, against an independently
+written expected matrix), **value-pinning** for likelihood/impact on a deterministic line
+graph (hand-computed 70.0 / 58.0 / 49.6 etc.), and **property tests** (likelihood monotonic
+in exposure; authentication never raises likelihood). The earlier sensitivity test already
+guards ranking stability.
+**Done when — met.** A scoring-weight or matrix change now breaks a specific test; 37 tests
+pass.
+
+---
+
+**Tier 3 complete.** The project is an installable package with a console entry point,
+CI-enforced lint/type/test gates on three Python versions, a pinned lockfile, and tests that
+pin real values rather than just smoke-checking structure.
 
 ---
 
