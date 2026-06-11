@@ -1,0 +1,125 @@
+# Reference ICS architecture — a plausible HYPOTHETICAL transit-signaling plant
+# built from widely-documented public commercial products. Non-proprietary.
+#
+# Purdue levels: 0 process · 1 control · 2 supervisory · 3 operations
+#                3.5 DMZ · 4 enterprise · 5 internet
+#
+# entry_nodes  = where the modeled adversary starts (see proposal: Threat Model)
+# target_nodes = critical assets whose compromise disrupts the physical process
+
+meta:
+  name: "Transit Signaling Reference Plant"
+  description: "Illustrative wayside signaling + SCADA, public products only."
+
+entry_nodes: [internet_gateway, vendor_remote_access]
+target_nodes: [wayside_plc, interlocking_controller]
+
+assets:
+  - name: internet_gateway
+    level: L5_INTERNET
+    component_type: firewall
+    vendor: ""
+    product: ""
+    version: ""
+    protocols: [HTTPS]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [enterprise_workstation]
+
+  - name: enterprise_workstation
+    level: L4_ENTERPRISE
+    component_type: workstation
+    protocols: [HTTPS, RDP]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [internet_gateway, dmz_historian_replica]
+
+  - name: dmz_historian_replica
+    level: L3_5_DMZ
+    component_type: historian
+    vendor: "AVEVA"
+    product: "Historian"
+    version: "2020"
+    protocols: [HTTPS, SQL]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [enterprise_workstation, scada_historian]
+
+  - name: vendor_remote_access
+    level: L3_5_DMZ
+    component_type: jump_host
+    protocols: [RDP, SSH]
+    authenticated: true
+    exposed_interfaces: [network, remote_access]
+    connections: [scada_server]
+
+  - name: scada_historian
+    level: L3_OPERATIONS
+    component_type: historian
+    vendor: "AVEVA"
+    product: "Historian"
+    version: "2020"
+    protocols: [SQL, OPC]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [dmz_historian_replica, scada_server]
+
+  - name: scada_server
+    level: L2_SUPERVISORY
+    component_type: SCADA_server
+    vendor: "AVEVA"
+    product: "InTouch"
+    version: "2020"
+    protocols: [OPC, Modbus]
+    authenticated: false
+    exposed_interfaces: [network]
+    connections: [scada_historian, vendor_remote_access, operator_hmi, wayside_plc, interlocking_controller]
+
+  - name: operator_hmi
+    level: L2_SUPERVISORY
+    component_type: HMI
+    vendor: "AVEVA"
+    product: "InTouch"
+    version: "2020"
+    protocols: [OPC]
+    authenticated: false
+    exposed_interfaces: [network, local]
+    connections: [scada_server]
+
+  - name: wayside_plc
+    level: L1_CONTROL
+    component_type: PLC
+    vendor: "Schneider Electric"
+    product: "Modicon M340"
+    version: "3.20"
+    protocols: [Modbus]
+    authenticated: false
+    exposed_interfaces: [network]
+    connections: [scada_server, track_circuit_sensor, signal_actuator]
+
+  - name: interlocking_controller
+    level: L1_CONTROL
+    component_type: PLC
+    vendor: "Siemens"
+    product: "SIMATIC S7-1500"
+    version: "2.9"
+    protocols: [S7comm, Modbus]
+    authenticated: false
+    exposed_interfaces: [network]
+    connections: [scada_server, signal_actuator]
+
+  - name: track_circuit_sensor
+    level: L0_PROCESS
+    component_type: sensor
+    protocols: [Modbus]
+    authenticated: false
+    exposed_interfaces: [field]
+    connections: [wayside_plc]
+
+  - name: signal_actuator
+    level: L0_PROCESS
+    component_type: actuator
+    protocols: [Modbus]
+    authenticated: false
+    exposed_interfaces: [field]
+    connections: [wayside_plc, interlocking_controller]
