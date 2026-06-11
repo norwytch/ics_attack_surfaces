@@ -5,14 +5,12 @@ __pycache__/
 venv/
 *.egg-info/
 
-# Downloaded / cached data — refreshable via src/data_sources.py (see data/README.md)
+# Downloaded / cached data — refreshable via ics_modeler/data_sources.py (see data/README.md)
 data/cache/
 data/attack_ics.json
 
-# Generated outputs
-results/figures/*.png
-results/figures/*.svg
-results/briefing.md
+# Generated outputs — the pipeline creates this dir on demand; committed samples live in examples/
+results/
 
 # Notebooks
 .ipynb_checkpoints/
