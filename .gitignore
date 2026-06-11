@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Downloaded / cached data — refreshable via src/data_sources.py (see data/README.md)
+data/cache/
+data/attack_ics.json
+
+# Generated outputs
+results/figures/*.png
+results/figures/*.svg
+results/briefing.md
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
