@@ -1,0 +1,49 @@
+# Asset -> MITRE ATT&CK for ICS technique mapping rules.
+#
+# Conditions in `when` are AND-of-fields. A field whose value is a list matches if
+# ANY listed value is present in the asset's corresponding list field (e.g. protocols).
+# A scalar field matches on equality. Each rule carries a `rationale` that flows into
+# the briefing as justification.
+#
+# Technique IDs reference MITRE ATT&CK for ICS (https://attack.mitre.org/matrices/ics/).
+# This is a starter set — extend deliberately.
+
+rules:
+  - id: modbus-unauth-command
+    when:
+      protocols: [Modbus]
+      authenticated: false
+    techniques: [T1692.001, T0821, T0836]   # Command Message · Modify Controller Tasking · Modify Parameter
+    rationale: "Modbus has no native authentication; any reachable host can issue function codes."
+
+  - id: s7comm-unauth
+    when:
+      protocols: [S7comm]
+      authenticated: false
+    techniques: [T1692.001, T0843]      # Command Message · Program Download
+    rationale: "Legacy S7comm lacks authentication, permitting command injection and program download."
+
+  - id: plc-network-exposed
+    when:
+      component_type: PLC
+      exposed_interfaces: [network]
+    techniques: [T0886, T0811]          # Remote Services · Data from Information Repositories
+    rationale: "Network-exposed PLC permits remote service access to control logic."
+
+  - id: hmi-operator-station
+    when:
+      component_type: HMI
+    techniques: [T0823, T0835]          # Graphical User Interface · Manipulate I/O Image
+    rationale: "Operator HMI is a high-value pivot for view manipulation and I/O image tampering."
+
+  - id: historian-data-repository
+    when:
+      component_type: historian
+    techniques: [T0811, T0893]          # Data from Information Repositories · Data from Local System
+    rationale: "Historians aggregate process data, a rich source for adversary reconnaissance."
+
+  - id: remote-access-jump-host
+    when:
+      exposed_interfaces: [remote_access]
+    techniques: [T0822, T0886]          # External Remote Services · Remote Services
+    rationale: "Vendor remote-access paths are a recurring real-world ICS intrusion vector."
