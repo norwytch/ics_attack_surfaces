@@ -1,4 +1,6 @@
 """Tests for NIST 800-30 scoring and attack-path findings."""
+import pytest
+
 from src.assets import load_architecture
 from src.scoring import (
     BAND_ORDER,
@@ -8,9 +10,11 @@ from src.scoring import (
     score_architecture,
     score_impact,
     score_likelihood,
+    sensitivity,
 )
 
 ARCH_PATH = "data/reference_architecture.yaml"
+WATER_PATH = "data/water_treatment.yaml"
 
 
 def test_bands_cover_full_range():
@@ -60,6 +64,19 @@ def test_known_exploited_cve_raises_likelihood():
         cves=[{"id": "CVE-x", "cvss": 9.8, "known_exploited": True}],
     )
     assert kev > base
+
+
+@pytest.mark.parametrize("arch_path", [ARCH_PATH, WATER_PATH])
+def test_scoring_ranking_is_robust_to_weight_perturbation(arch_path):
+    # "Own the scoring": the priority conclusion must not hinge on the exact weights.
+    arch = load_architecture(arch_path)
+    r = sensitivity(arch, perturb=0.2, top_n=3)
+    # the single highest-priority asset is invariant under +/-20% weight perturbation
+    assert r["top1_stable_fraction"] == 1.0
+    # bands rarely move
+    assert r["band_stable_fraction"] >= 0.9
+    # churn is confined to a few near-tied assets, not wild reordering
+    assert len(r["top_n_contenders"]) <= r["top_n"] + 2
 
 
 def test_path_findings_reach_targets_shortest_first():

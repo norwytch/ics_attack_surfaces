@@ -164,41 +164,46 @@ def _downstream(graph, name) -> set:
     return seen
 
 
-def score_likelihood(asset, graph, entry_nodes, cves=None) -> float:
+def score_likelihood(asset, graph, entry_nodes, cves=None, weights=None) -> float:
     """0-100 likelihood per the 800-30 rubric (exposure, auth, known-exploited)."""
+    weights = weights or LIKELIHOOD_WEIGHTS
     factors = {
         "exposure": _exposure(graph, entry_nodes, asset.name),
         "auth": 100.0 if not asset.authenticated else 20.0,
         "known_exploited": _vuln_factor(cves),
     }
-    return round(sum(factors[k] * w for k, w in LIKELIHOOD_WEIGHTS.items()), 1)
+    return round(sum(factors[k] * weights[k] for k in weights), 1)
 
 
-def score_impact(asset, graph) -> float:
+def score_impact(asset, graph, weights=None) -> float:
     """0-100 impact per the 800-30 rubric (process criticality, blast radius)."""
+    weights = weights or IMPACT_WEIGHTS
     n = graph.number_of_nodes()
     factors = {
         "criticality": float(CRITICALITY_BY_LEVEL.get(asset.level.name, 50)),
         "blast_radius": 100.0 * len(_downstream(graph, asset.name)) / (n - 1) if n > 1 else 0.0,
     }
-    return round(sum(factors[k] * w for k, w in IMPACT_WEIGHTS.items()), 1)
+    return round(sum(factors[k] * weights[k] for k in weights), 1)
 
 
-def score_architecture(architecture, graph=None, cves_by_asset=None) -> dict:
+def score_architecture(architecture, graph=None, cves_by_asset=None,
+                       likelihood_weights=None, impact_weights=None) -> dict:
     """Per-asset {likelihood, impact, band, severity} — the report's scoring input.
 
     The risk band comes from the NIST 800-30 Table I-2 lookup (risk_band); severity
     is its 0-4 ordinal, used for ranking. Likelihood and impact remain the 0-100 axes
-    for the risk-matrix scatter.
+    for the risk-matrix scatter. Weights are injectable so `sensitivity()` can perturb
+    them; both default to the documented constants.
     """
     graph = graph if graph is not None else architecture.graph()
     cves_by_asset = cves_by_asset or {}
     out = {}
     for name, asset in architecture.assets.items():
         likelihood = score_likelihood(
-            asset, graph, architecture.entry_nodes, cves_by_asset.get(name)
+            asset, graph, architecture.entry_nodes, cves_by_asset.get(name),
+            weights=likelihood_weights,
         )
-        impact = score_impact(asset, graph)
+        impact = score_impact(asset, graph, weights=impact_weights)
         severity = risk_severity(likelihood, impact)
         out[name] = {
             "likelihood": likelihood,
@@ -207,6 +212,67 @@ def score_architecture(architecture, graph=None, cves_by_asset=None) -> dict:
             "severity": severity,
         }
     return out
+
+
+def _rank(scores) -> list:
+    """Asset names ordered by risk severity (then impact) — highest first."""
+    return [n for n, _ in sorted(scores.items(),
+                                 key=lambda kv: (-kv[1]["severity"], -kv[1]["impact"]))]
+
+
+def _perturbed_weights(base: dict, perturb: float) -> list:
+    """Every weight vector that scales each weight by (1-perturb), 1, or (1+perturb),
+    renormalized to sum to 1."""
+    from itertools import product
+
+    keys = list(base)
+    out = []
+    for combo in product((1 - perturb, 1.0, 1 + perturb), repeat=len(keys)):
+        scaled = {k: base[k] * f for k, f in zip(keys, combo)}
+        total = sum(scaled.values())
+        out.append({k: v / total for k, v in scaled.items()})
+    return out
+
+
+def sensitivity(architecture, graph=None, cves_by_asset=None,
+                perturb: float = 0.2, top_n: int = 3) -> dict:
+    """Does the risk ranking depend on the exact factor weights?
+
+    Re-scores the architecture under every combination of likelihood and impact
+    weights perturbed by +/-`perturb`, and reports how stable the top-N priority set
+    and per-asset bands are. A high stability fraction means the conclusions are robust
+    to the weights, not an artifact of the specific numbers chosen.
+    """
+    graph = graph if graph is not None else architecture.graph()
+    base = score_architecture(architecture, graph, cves_by_asset)
+    base_rank = _rank(base)
+    base_top, base_first = set(base_rank[:top_n]), base_rank[0]
+
+    runs = top_stable = top1_stable = band_match = band_total = 0
+    contenders = set()
+    for lw in _perturbed_weights(LIKELIHOOD_WEIGHTS, perturb):
+        for iw in _perturbed_weights(IMPACT_WEIGHTS, perturb):
+            s = score_architecture(architecture, graph, cves_by_asset,
+                                   likelihood_weights=lw, impact_weights=iw)
+            r = _rank(s)
+            top_stable += set(r[:top_n]) == base_top
+            top1_stable += r[0] == base_first
+            contenders |= set(r[:top_n])
+            for name in s:
+                band_total += 1
+                band_match += s[name]["band"] == base[name]["band"]
+            runs += 1
+
+    return {
+        "perturbations": runs,
+        "perturb": perturb,
+        "top_n": top_n,
+        "baseline_top_n": base_rank[:top_n],
+        "top1_stable_fraction": round(top1_stable / runs, 3),
+        "top_n_set_stable_fraction": round(top_stable / runs, 3),
+        "top_n_contenders": sorted(contenders),
+        "band_stable_fraction": round(band_match / band_total, 3),
+    }
 
 
 def path_findings(graph, entry_nodes, target_nodes, scores=None, k=5) -> list[dict]:
