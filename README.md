@@ -9,8 +9,10 @@ ATT&CK for ICS techniques, scores and prioritizes risk (NIST SP 800-30), and gen
 a structured vulnerability briefing. Built entirely on **public reference architectures
 and public data** — no proprietary content.
 
-See [`ics_attack_surface_modeler_proposal.md`](ics_attack_surface_modeler_proposal.md)
-for the full design.
+**What it demonstrates:** cyber-physical threat modeling on the Purdue model, fluency with
+ATT&CK for ICS / NIST SP 800-30 / CISA KEV, segmentation and attack-path reasoning, and a
+reproducible data pipeline over public security sources. Design decisions and trade-offs are
+recorded in [ROADMAP.md](ROADMAP.md).
 
 ## Status
 
@@ -31,6 +33,18 @@ size = impact):
 
 ![ICS asset graph](examples/water_treatment/figures/network.png)
 
+## Demo
+
+[`notebooks/demo.ipynb`](notebooks/demo.ipynb) is an **executed** end-to-end walkthrough —
+load the model → map ATT&CK techniques → score risk → flag segmentation bypasses → rank
+attack paths → stress-test the weights → render the figures. Outputs are saved in the
+notebook, so it reads on GitHub without running. To run it yourself:
+
+```bash
+pip install -e ".[dev]" jupyter
+jupyter notebook notebooks/demo.ipynb
+```
+
 ## Layout
 
 ```
@@ -38,7 +52,9 @@ data/        Architectures, mapping rules, threat trends, CVE snapshot, scoring 
 ics_modeler/ assets · mapping · scoring · trends · report · data_sources · pipeline
 scripts/     One-off data builders (ATT&CK harvest, CVE snapshot)
 tests/       Unit tests
-results/     Generated briefing + figures
+examples/    Committed sample briefing + figures
+notebooks/   demo.ipynb — executed end-to-end walkthrough
+results/     Generated briefing + figures (gitignored)
 ```
 
 ## Quick start
