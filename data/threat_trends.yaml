@@ -1,0 +1,64 @@
+# Curated, CITED references to real public ICS attack campaigns.
+#
+# Provenance: technique lists are a CURATED SUBSET of the most characteristic
+# techniques for each campaign, drawn from MITRE's full ATT&CK for ICS software
+# mappings (the `attack_id` below — e.g. S0603). Regenerate the full lists with
+# `python -m scripts.harvest_trends`, then trim to the signature techniques.
+#
+# `sources` are the canonical primary references MITRE attaches to each software
+# object. Summaries are written by hand and verified against those sources.
+# Never fabricate campaigns or mappings — accuracy is the point.
+
+campaigns:
+  - id: stuxnet
+    name: "Stuxnet"
+    attack_id: S0603
+    year: 2010
+    sector: "Nuclear enrichment (uranium centrifuges)"
+    summary: >-
+      Reprogrammed Siemens S7 PLCs controlling uranium-enrichment centrifuges,
+      altering rotor speeds to cause physical damage while replaying recorded
+      normal process values to operators to delay detection.
+    # Curated from S0603: reprogram-the-PLC-and-hide-it signature.
+    techniques: [T0843, T0889, T0821, T0835, T0831]
+    # Program Download · Modify Program · Modify Controller Tasking ·
+    # Manipulate I/O Image · Manipulation of Control
+    sources:
+      - "https://us-cert.cisa.gov/ics/advisories/ICSA-10-272-01"                     # CISA ICS advisory
+      - "https://docs.broadcom.com/doc/security-response-w32-stuxnet-dossier-11-en"  # Symantec W32.Stuxnet Dossier
+      - "https://www.langner.com/wp-content/uploads/2017/03/to-kill-a-centrifuge.pdf" # Langner technical analysis
+
+  - id: triton-trisis
+    name: "TRITON / TRISIS"
+    attack_id: S1009
+    year: 2017
+    sector: "Petrochemical (safety instrumented systems)"
+    summary: >-
+      First malware aimed at defeating industrial safety systems: targeted
+      Schneider Triconex SIS controllers and reprogrammed safety logic; a flaw in
+      the attack triggered a plant trip that exposed the intrusion.
+    # Curated from S1009: attack-the-safety-controller signature.
+    techniques: [T0880, T0858, T0843, T0845, T0821]
+    # Loss of Safety · Change Operating Mode · Program Download ·
+    # Program Upload · Modify Controller Tasking
+    sources:
+      - "https://www.fireeye.com/blog/threat-research/2017/12/attackers-deploy-new-ics-attack-framework-triton.html"  # FireEye/Mandiant disclosure
+      - "https://dragos.com/blog/trisis/TRISIS-01.pdf"  # Dragos TRISIS report
+      - "https://ics-cert.us-cert.gov/sites/default/files/documents/MAR-17-352-01%20HatMan%20-%20Safety%20System%20Targeted%20Malware%20%28Update%20B%29.pdf"  # DHS CISA MAR (HatMan)
+
+  - id: industroyer
+    name: "Industroyer / CrashOverride"
+    attack_id: S0604
+    year: 2016
+    sector: "Electric power transmission"
+    summary: >-
+      Modular malware that spoke native ICS protocols (IEC 60870-5-101/104,
+      IEC 61850, OPC DA) to issue breaker-open commands at a Ukrainian
+      transmission substation, causing an outage; included a data-wiper component.
+    # Curated from S0604: protocol-native grid-disruption signature.
+    techniques: [T1692.001, T0813, T0816, T0809, T0831]
+    # Command Message · Denial of Control · Device Restart/Shutdown ·
+    # Data Destruction · Manipulation of Control
+    sources:
+      - "https://www.welivesecurity.com/wp-content/uploads/2017/06/Win32_Industroyer.pdf"  # ESET Win32/Industroyer
+      - "https://dragos.com/blog/crashoverride/CrashOverride-01.pdf"                        # Dragos CRASHOVERRIDE
