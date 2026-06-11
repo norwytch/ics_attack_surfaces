@@ -31,10 +31,16 @@ results/ Generated briefing + figures
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python -m pytest tests/                      # run the tests
-python -m src.pipeline                        # generate results/briefing.md + figures (offline)
-python -m src.pipeline --cves                 # ...with live NVD CVE + CISA KEV enrichment
+python -m pytest tests/                       # run the tests
+python -m src.pipeline                         # transit-signaling model (default)
+python -m src.pipeline --arch data/water_treatment.yaml --out results_water   # water-treatment model
+python -m src.pipeline --cves                  # ...with live NVD CVE + CISA KEV enrichment
 ```
+
+Two reference architectures ship with the project — a transit-signaling plant
+([data/reference_architecture.yaml](data/reference_architecture.yaml)) and a municipal
+water-treatment plant ([data/water_treatment.yaml](data/water_treatment.yaml), different
+vendors and protocols) — to demonstrate the framework generalizes.
 
 ## Pipeline (target)
 

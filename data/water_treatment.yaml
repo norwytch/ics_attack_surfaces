@@ -1,0 +1,154 @@
+# Second reference architecture — a plausible HYPOTHETICAL municipal water-treatment
+# plant, built from widely-documented public commercial products. Non-proprietary.
+#
+# Deliberately structurally different from the transit-signaling model, to test that
+# the framework generalizes:
+#   - different vendors (Rockwell, GE, OSIsoft, Inductive Automation)
+#   - different protocols (EtherNet/IP, DNP3) alongside Modbus/OPC
+#   - a weak-segmentation design: a remote-access host at L4 reaches the SCADA server
+#     directly, bypassing the DMZ (the pattern behind the 2021 Oldsmar incident)
+#
+# entry_nodes  = where the modeled adversary starts
+# target_nodes = critical assets (chemical dosing / distribution) whose compromise
+#                has public-safety impact
+
+meta:
+  name: "Municipal Water Treatment Reference Plant"
+  description: "Illustrative treatment + distribution SCADA, public products only."
+
+entry_nodes: [internet_gateway, remote_access_host]
+target_nodes: [dosing_plc, pump_plc]
+
+assets:
+  - name: internet_gateway
+    level: L5_INTERNET
+    component_type: firewall
+    protocols: [HTTPS]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [business_workstation]
+
+  - name: business_workstation
+    level: L4_ENTERPRISE
+    component_type: workstation
+    protocols: [HTTPS, RDP]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [internet_gateway, remote_access_host, dmz_historian_replica]
+
+  - name: remote_access_host
+    level: L4_ENTERPRISE
+    component_type: jump_host
+    protocols: [RDP, VNC]
+    authenticated: false                  # shared remote-desktop credentials (Oldsmar pattern)
+    exposed_interfaces: [network, remote_access]
+    connections: [business_workstation, scada_server]   # reaches L2 directly, bypassing the DMZ
+
+  - name: dmz_historian_replica
+    level: L3_5_DMZ
+    component_type: historian
+    vendor: "OSIsoft"
+    product: "PI Server"
+    version: "2018"
+    protocols: [HTTPS, SQL]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [business_workstation, pi_historian]
+
+  - name: pi_historian
+    level: L3_OPERATIONS
+    component_type: historian
+    vendor: "OSIsoft"
+    product: "PI Server"
+    version: "2018"
+    protocols: [OPC, SQL]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [dmz_historian_replica, scada_server]
+
+  - name: scada_server
+    level: L2_SUPERVISORY
+    component_type: SCADA_server
+    vendor: "Inductive Automation"
+    product: "Ignition"
+    version: "8.1"
+    protocols: [OPC, Modbus]
+    authenticated: false
+    exposed_interfaces: [network]
+    connections: [pi_historian, remote_access_host, operator_hmi, dosing_plc, pump_plc, distribution_rtu]
+
+  - name: operator_hmi
+    level: L2_SUPERVISORY
+    component_type: HMI
+    vendor: "Rockwell Automation"
+    product: "FactoryTalk View SE"
+    version: "11.0"
+    protocols: [OPC]
+    authenticated: false
+    exposed_interfaces: [network, local]
+    connections: [scada_server]
+
+  - name: dosing_plc
+    level: L1_CONTROL
+    component_type: PLC
+    vendor: "Rockwell Automation"
+    product: "ControlLogix 1756-L61"
+    version: "20.011"
+    protocols: [EtherNet/IP]
+    authenticated: false
+    exposed_interfaces: [network]
+    connections: [scada_server, chlorine_dosing_actuator, ph_sensor]
+
+  - name: pump_plc
+    level: L1_CONTROL
+    component_type: PLC
+    vendor: "Rockwell Automation"
+    product: "CompactLogix 5370"
+    version: "30.011"
+    protocols: [EtherNet/IP, Modbus]
+    authenticated: false
+    exposed_interfaces: [network]
+    connections: [scada_server, distribution_pump]
+
+  - name: distribution_rtu
+    level: L1_CONTROL
+    component_type: RTU
+    vendor: "GE"
+    product: "D20 RTU"
+    version: "5.0"
+    protocols: [DNP3]
+    authenticated: false
+    exposed_interfaces: [network]
+    connections: [scada_server, flow_sensor]
+
+  - name: chlorine_dosing_actuator
+    level: L0_PROCESS
+    component_type: actuator
+    protocols: [EtherNet/IP]
+    authenticated: false
+    exposed_interfaces: [field]
+    connections: [dosing_plc]
+
+  - name: ph_sensor
+    level: L0_PROCESS
+    component_type: sensor
+    protocols: [EtherNet/IP]
+    authenticated: false
+    exposed_interfaces: [field]
+    connections: [dosing_plc]
+
+  - name: distribution_pump
+    level: L0_PROCESS
+    component_type: actuator
+    protocols: [Modbus]
+    authenticated: false
+    exposed_interfaces: [field]
+    connections: [pump_plc]
+
+  - name: flow_sensor
+    level: L0_PROCESS
+    component_type: sensor
+    protocols: [DNP3]
+    authenticated: false
+    exposed_interfaces: [field]
+    connections: [distribution_rtu]

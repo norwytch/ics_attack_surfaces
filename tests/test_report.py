@@ -80,3 +80,11 @@ def test_pipeline_build_offline(tmp_path):
     assert (tmp_path / "figures" / "network.png").exists()
     assert (tmp_path / "figures" / "risk_matrix.png").exists()
     assert "Vulnerability Briefing" in (tmp_path / "briefing.md").read_text()
+
+
+def test_pipeline_build_second_architecture(tmp_path):
+    # the framework must run end-to-end on a structurally different model unchanged
+    build(arch_path="data/water_treatment.yaml", out_dir=str(tmp_path), fetch_cves=False)
+    briefing = (tmp_path / "briefing.md").read_text()
+    assert "Water Treatment" in briefing
+    assert (tmp_path / "figures" / "network.png").exists()

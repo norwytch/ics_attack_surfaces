@@ -12,6 +12,8 @@ from src.mapping import (
 )
 
 ATTACK_PATH = "data/attack_ics.json"
+ARCHES = ["data/reference_architecture.yaml", "data/water_treatment.yaml"]
+OT_PROTOCOLS = {"Modbus", "DNP3", "EtherNet/IP", "S7comm"}
 
 ARCH_PATH = "data/reference_architecture.yaml"
 RULES_PATH = "data/mapping_rules.yaml"
@@ -34,6 +36,25 @@ def test_graph_is_connected_to_targets():
     # every target must be reachable from at least one entry node
     for target in arch.target_nodes:
         assert any(nx.has_path(g, e, target) for e in arch.entry_nodes)
+
+
+@pytest.mark.parametrize("arch_path", ARCHES)
+def test_every_reference_architecture_loads(arch_path):
+    arch = load_architecture(arch_path)
+    assert arch.assets and arch.entry_nodes and arch.target_nodes
+
+
+@pytest.mark.parametrize("arch_path", ARCHES)
+def test_ot_assets_are_never_left_uncovered(arch_path):
+    # generalization guard: any asset speaking an unauthenticated OT protocol must
+    # map to at least one technique, regardless of which protocol/vendor it uses.
+    arch = load_architecture(arch_path)
+    mapped = map_architecture(arch, load_rules(RULES_PATH))
+    for name, a in arch.assets.items():
+        if OT_PROTOCOLS & set(a.protocols):
+            assert mapped[name]["techniques"], (
+                f"{name} speaks an OT protocol ({a.protocols}) but got no techniques"
+            )
 
 
 def test_unresolved_connection_raises(tmp_path):

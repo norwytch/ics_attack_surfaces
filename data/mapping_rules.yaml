@@ -1,34 +1,50 @@
 # Asset -> MITRE ATT&CK for ICS technique mapping rules.
 #
 # Conditions in `when` are AND-of-fields. A field whose value is a list matches if
-# ANY listed value is present in the asset's corresponding list field (e.g. protocols).
-# A scalar field matches on equality. Each rule carries a `rationale` that flows into
-# the briefing as justification.
+# ANY listed value is present in the asset's corresponding field (works for both list
+# fields like `protocols` and scalar fields like `component_type`). A scalar `when`
+# value matches on equality. Each rule carries a `rationale` for the briefing.
 #
 # Technique IDs reference MITRE ATT&CK for ICS (https://attack.mitre.org/matrices/ics/).
-# This is a starter set — extend deliberately.
+# The protocol rules below are vendor/protocol-general: they cover the common
+# unauthenticated OT protocols rather than naming a single one.
 
 rules:
-  - id: modbus-unauth-command
+  - id: unauth-control-protocol
     when:
-      protocols: [Modbus]
+      protocols: [Modbus, DNP3, EtherNet/IP, S7comm]
       authenticated: false
-    techniques: [T1692.001, T0821, T0836]   # Command Message · Modify Controller Tasking · Modify Parameter
-    rationale: "Modbus has no native authentication; any reachable host can issue function codes."
+    techniques: [T1692.001, T0836]      # Command Message · Modify Parameter
+    rationale: >-
+      These OT protocols (Modbus, DNP3, EtherNet/IP, S7comm) have no native
+      authentication; any reachable host can inject commands and change parameters.
 
-  - id: s7comm-unauth
+  - id: unauth-controller-tasking
     when:
-      protocols: [S7comm]
+      component_type: [PLC, RTU]
+      protocols: [Modbus, DNP3, EtherNet/IP, S7comm]
       authenticated: false
-    techniques: [T1692.001, T0843]      # Command Message · Program Download
-    rationale: "Legacy S7comm lacks authentication, permitting command injection and program download."
+    techniques: [T0821]                 # Modify Controller Tasking
+    rationale: >-
+      Controllers (PLC/RTU) on an unauthenticated OT protocol can have their control
+      logic / scan tasking altered remotely.
 
-  - id: plc-network-exposed
+  - id: program-download-protocol
     when:
-      component_type: PLC
+      component_type: [PLC, RTU]
+      protocols: [EtherNet/IP, S7comm]
+      authenticated: false
+    techniques: [T0843]                 # Program Download
+    rationale: >-
+      EtherNet/IP (CIP) and S7comm support remote program download, letting an
+      attacker load malicious logic onto the controller.
+
+  - id: controller-network-exposed
+    when:
+      component_type: [PLC, RTU]
       exposed_interfaces: [network]
     techniques: [T0886, T0811]          # Remote Services · Data from Information Repositories
-    rationale: "Network-exposed PLC permits remote service access to control logic."
+    rationale: "Network-exposed controller permits remote service access to control logic."
 
   - id: hmi-operator-station
     when:
@@ -46,4 +62,4 @@ rules:
     when:
       exposed_interfaces: [remote_access]
     techniques: [T0822, T0886]          # External Remote Services · Remote Services
-    rationale: "Vendor remote-access paths are a recurring real-world ICS intrusion vector."
+    rationale: "Vendor/maintenance remote-access paths are a recurring real-world ICS intrusion vector."

@@ -63,11 +63,18 @@ def build(arch_path="data/reference_architecture.yaml",
 
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description="Generate the ICS vulnerability briefing.")
+    ap.add_argument("--arch", default="data/reference_architecture.yaml",
+                    help="reference architecture YAML to analyze")
+    ap.add_argument("--rules", default="data/mapping_rules.yaml",
+                    help="asset->technique mapping rules YAML")
+    ap.add_argument("--trends", default="data/threat_trends.yaml",
+                    help="curated threat-trend campaign YAML")
     ap.add_argument("--cves", action="store_true",
                     help="enrich with live NVD CVEs + CISA KEV (network, slower)")
     ap.add_argument("--out", default="results", help="output directory")
     args = ap.parse_args(argv)
-    dest = build(out_dir=args.out, fetch_cves=args.cves)
+    dest = build(arch_path=args.arch, rules_path=args.rules, trends_path=args.trends,
+                 out_dir=args.out, fetch_cves=args.cves)
     print(f"Briefing written to {dest}")
     print(f"Figures written to {args.out}/figures/")
 
