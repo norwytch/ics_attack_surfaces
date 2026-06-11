@@ -1,7 +1,8 @@
-"""Likelihood/impact scoring (NIST SP 800-30) + attack-path / chokepoint analysis.
+"""Risk scoring (NIST SP 800-30) and segmentation-aware attack-path analysis.
 
-Attack-path functions are functional. Likelihood/impact scoring is stubbed — implement
-per data/risk_rubric.md (0-100 internal, qualitative bands in the briefing).
+Likelihood and impact are scored 0-100 and combined into a risk band via the 800-30
+Table I-2 lookup (see data/risk_rubric.md). Attack paths and chokepoints run on the
+policy-respecting reachability graph; `sensitivity()` stress-tests the weight choices.
 """
 from __future__ import annotations
 

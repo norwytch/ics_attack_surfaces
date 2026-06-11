@@ -1,7 +1,7 @@
 """Asset -> ATT&CK technique mapping (data-driven) + CVE attachment.
 
-The rule engine (`rule_matches`, `map_asset_to_techniques`) is functional. CVE lookup
-is delegated to `data_sources` and is stubbed there.
+A data-driven rule engine (`rule_matches`, `map_asset_to_techniques`) maps asset
+attributes to ATT&CK for ICS techniques; CVE attachment is delegated to `data_sources`.
 """
 from __future__ import annotations
 

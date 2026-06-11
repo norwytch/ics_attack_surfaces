@@ -21,6 +21,16 @@ bypasses are flagged), correlates real campaigns, and generates the briefing + f
 Real CVEs (CPE-matched, KEV-flagged) are attached from a committed snapshot **by default**;
 `--cves` refreshes them live from NVD.
 
+## Sample output
+
+A full generated briefing for the water-treatment model is committed at
+[`examples/water_treatment/`](examples/water_treatment/briefing.md) — executive summary,
+risk-ranked assets, IT/OT segmentation findings, ranked attack paths, CPE-matched CVEs, and
+confidence-scored threat-trend correlation. The modeled asset graph (color = Purdue level,
+size = impact):
+
+![ICS asset graph](examples/water_treatment/figures/network.png)
+
 ## Layout
 
 ```

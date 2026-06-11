@@ -1,7 +1,8 @@
 """Threat-trend mapping.
 
 Connects the modeled architecture's technique exposure to real, cited public ICS
-campaigns (data/threat_trends.yaml). Loader is functional; correlation is stubbed.
+campaigns (data/threat_trends.yaml), scoring each correlation by technique coverage
+and reporting a confidence band rather than a binary match.
 """
 from __future__ import annotations
 

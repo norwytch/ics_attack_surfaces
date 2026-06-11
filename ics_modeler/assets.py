@@ -1,7 +1,8 @@
 """Asset model + graph construction.
 
-Loads a reference architecture from YAML, validates it, and builds a networkx graph.
-This module is functional; the rest of the pipeline builds on the graph it produces.
+Loads a reference architecture from YAML, validates it, and builds both the physical
+topology graph and the segmentation-aware reachability graph the rest of the pipeline
+runs on.
 """
 from __future__ import annotations
 

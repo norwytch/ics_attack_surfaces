@@ -1,4 +1,4 @@
-"""CISA advisory / NVD CVE / CISA KEV / MITRE ATT&CK fetchers.
+"""NVD CVE / CISA KEV / MITRE ATT&CK for ICS data sources.
 
 All network fetchers cache to disk and only re-fetch when the cache is missing or
 `force=True`. NVD is rate-limited without an API key — set NVD_API_KEY in the
