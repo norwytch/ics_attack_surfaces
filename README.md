@@ -16,15 +16,17 @@ End-to-end functional. The pipeline loads the reference architecture, maps asset
 ATT&CK for ICS techniques, scores risk (NIST 800-30 Table I-2), runs **segmentation-aware**
 attack-path / chokepoint analysis (paths respect the firewall policy; IT→OT boundary
 bypasses are flagged), correlates real campaigns, and generates the briefing + figures.
-CVE/KEV enrichment is opt-in (`--cves`, requires network).
+Real CVEs (CPE-matched, KEV-flagged) are attached from a committed snapshot **by default**;
+`--cves` refreshes them live from NVD.
 
 ## Layout
 
 ```
-data/    Reference architecture, mapping rules, threat trends, scoring rubric (all data, cited)
-ics_modeler/ assets · mapping · scoring · trends · report · data_sources
-tests/   Unit tests (rule matching, schema validation)
-results/ Generated briefing + figures
+data/        Architectures, mapping rules, threat trends, CVE snapshot, scoring rubric (cited)
+ics_modeler/ assets · mapping · scoring · trends · report · data_sources · pipeline
+scripts/     One-off data builders (ATT&CK harvest, CVE snapshot)
+tests/       Unit tests
+results/     Generated briefing + figures
 ```
 
 ## Quick start
@@ -32,7 +34,7 @@ results/ Generated briefing + figures
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"                        # installs the package + dev tooling
-#   (or: pip install -r requirements.lock      # exact pinned versions)
+#   reproducible: pip install -r requirements.lock && pip install -e . --no-deps
 pytest                                          # run the tests
 ics-modeler                                     # transit-signaling model (default)
 ics-modeler --arch data/water_treatment.yaml --out results_water   # water-treatment model
@@ -58,13 +60,13 @@ Two reference architectures ship with the project — a transit-signaling plant
 water-treatment plant ([data/water_treatment.yaml](data/water_treatment.yaml), different
 vendors and protocols) — to demonstrate the framework generalizes.
 
-## Pipeline (target)
+## Pipeline
 
-1. Load + validate `reference_architecture.yaml` → asset graph
-2. Map assets → ATT&CK techniques via `mapping_rules.yaml`
-3. Attach real CVEs via NVD (CPE lookup) + flag CISA KEV
-4. Score likelihood × impact (NIST 800-30) + attack-path / chokepoint analysis
-5. Map to recent real-world campaigns (`threat_trends.yaml`)
+1. Load + validate the architecture YAML → asset graph + segmentation policy
+2. Map assets → ATT&CK for ICS techniques via `mapping_rules.yaml`
+3. Attach CPE-matched, KEV-flagged CVEs (committed snapshot by default; `--cves` for live NVD)
+4. Score risk (NIST 800-30 Table I-2) + segmentation-aware attack-path / chokepoint analysis
+5. Correlate real campaigns (`threat_trends.yaml`) with a confidence score
 6. Generate the briefing + figures into `results/`
 
 ## Data sources
