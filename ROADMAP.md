@@ -179,6 +179,50 @@ pin real values rather than just smoke-checking structure.
 
 ---
 
+## Tier 4 — Security credibility (in progress: #10–11 done, #12–13 queued)
+
+Standard artifacts, framework alignment, and self-applied security hygiene that signal a
+real cyber project rather than a Python project about security.
+
+### 10. ATT&CK Navigator layer export — DONE
+**Why.** Analysts work in MITRE's ATT&CK Navigator daily; a Navigator-compatible layer is an
+instantly recognizable artifact and reuses the technique mapping already built.
+**What was done.** `frameworks.navigator_layer` / `write_navigator_layer` emit a valid
+`domain: "ics-attack"` layer — one entry per exposed technique, scored by the number of
+assets exposing it, with the asset names in the comment and a heat gradient. The pipeline
+writes `attack_navigator_layer.json` alongside the briefing; the committed sample is in
+`examples/water_treatment/`. Tests validate the layer structure.
+**Done when — met.** The pipeline emits a `.json` that loads in ATT&CK Navigator and
+highlights the architecture's exposed techniques.
+
+### 11. IEC 62443 zones & conduits alignment — DONE
+**Why.** IEC 62443 is the ICS-specific security standard; the Purdue + segmentation model is
+already a zones-and-conduits model, so making it explicit is high ICS credibility.
+**What was done.** `frameworks.IEC_62443_ZONE` maps each Purdue level to a 62443 security
+zone; the briefing gained an "IEC 62443 zones & conduits" section that groups assets by zone,
+flags any IT→OT conduit that bypasses the Industrial DMZ (reusing `segmentation_violations`),
+and cites IEC 62443-3-3.
+**Done when — met.** The briefing presents the architecture in 62443 zone/conduit terms and
+cites the standard.
+
+### 12. Supply-chain security + SECURITY.md
+**Why.** A security project is judged on its own hygiene; scanning its dependencies and
+publishing a disclosure policy is table stakes.
+**Plan.** Add a `pip-audit` (dependency CVE scan) job to CI, pin GitHub Actions by commit
+SHA, and add a `SECURITY.md` (supported versions, disclosure process, contact). Optionally a
+CycloneDX SBOM and Dependabot config.
+**Done when.** CI fails on a known-vulnerable dependency, and `SECURITY.md` exists.
+
+### 13. ATT&CK mitigations mapping
+**Why.** Mapping weaknesses to techniques says what's exposed; mapping techniques to their
+ATT&CK mitigations turns that into cited countermeasures — what a real assessment delivers.
+**Plan.** Parse mitigation objects + `mitigates` relationships from the ATT&CK bundle, and in
+the briefing pair each exposed technique with its ATT&CK for ICS mitigations (M-codes) to
+ground the recommendations.
+**Done when.** Briefing recommendations cite specific ATT&CK mitigations per exposed technique.
+
+---
+
 ## Explicitly out of scope (for now)
 
 - Live network/traffic analysis — this is a static, model-based tool by design.

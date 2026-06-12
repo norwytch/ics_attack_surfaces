@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from .frameworks import iec62443_zones
+
 _LEVEL_ORDER = [  # process -> internet, for inventory grouping
     "L0_PROCESS", "L1_CONTROL", "L2_SUPERVISORY", "L3_OPERATIONS",
     "L3_5_DMZ", "L4_ENTERPRISE", "L5_INTERNET",
@@ -90,6 +92,20 @@ def generate_briefing(architecture, mapped, scores, paths, chokepoints_,
                      f"— flat path from IT into OT; highest-priority segmentation fix.")
         L.append("")
 
+    # IEC 62443 zones & conduits -------------------------------------------
+    L.append("## IEC 62443 zones & conduits\n")
+    L.append("The architecture expressed in IEC 62443 terms — security **zones** (grouped "
+             "assets) and the **conduits** that connect them.\n")
+    for zone, names in iec62443_zones(architecture):
+        L.append(f"- **{zone}**: {', '.join(names)}")
+    if violations:
+        bypass = "; ".join(f"{v['from']} → {v['to']}" for v in violations)
+        L.append(f"\nConduit concern: IT→OT traffic should traverse the Industrial DMZ; "
+                 f"the following conduit(s) bypass it — **{bypass}**.")
+    else:
+        L.append("\nAll IT→OT conduits are mediated by the Industrial DMZ.")
+    L.append("\n_Reference: IEC 62443-3-3 — System security requirements and security levels._\n")
+
     # Attack-path findings --------------------------------------------------
     L.append("## Attack-path findings (easiest external→critical first)\n")
     L.append("_Paths respect the segmentation policy — edges the firewall denies are "
@@ -145,7 +161,9 @@ def generate_briefing(architecture, mapped, scores, paths, chokepoints_,
     L.append("## Figures\n")
     L.append("- `figures/network.png` — asset graph (color = Purdue level, size = impact)")
     L.append("- `figures/heatmap.png` — technique exposure matrix")
-    L.append("- `figures/risk_matrix.png` — likelihood × impact, one point per asset\n")
+    L.append("- `figures/risk_matrix.png` — likelihood × impact, one point per asset")
+    L.append("- `attack_navigator_layer.json` — load at mitre-attack.github.io/attack-navigator "
+             "for a technique-exposure heatmap\n")
 
     # Scope & limitations ---------------------------------------------------
     L.append("## Scope & limitations\n")

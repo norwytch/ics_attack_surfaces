@@ -64,6 +64,22 @@ See `figures/heatmap.png` for the full matrix.
 Connections that cross the IT/OT boundary **directly, skipping the DMZ** — the segmentation control that should mediate them:
 - **remote_access_host** (L4_ENTERPRISE) → **scada_server** (L2_SUPERVISORY) — flat path from IT into OT; highest-priority segmentation fix.
 
+## IEC 62443 zones & conduits
+
+The architecture expressed in IEC 62443 terms — security **zones** (grouped assets) and the **conduits** that connect them.
+
+- **Process / Safety Zone**: chlorine_dosing_actuator, ph_sensor, distribution_pump, flow_sensor
+- **Basic Control Zone (Cell/Area)**: dosing_plc, pump_plc, distribution_rtu
+- **Supervisory Control Zone**: scada_server, operator_hmi
+- **Operations / Site Manufacturing Zone**: pi_historian
+- **Industrial DMZ**: dmz_historian_replica
+- **Enterprise Zone**: business_workstation, remote_access_host
+- **External / Untrusted Zone**: internet_gateway
+
+Conduit concern: IT→OT traffic should traverse the Industrial DMZ; the following conduit(s) bypass it — **remote_access_host → scada_server**.
+
+_Reference: IEC 62443-3-3 — System security requirements and security levels._
+
 ## Attack-path findings (easiest external→critical first)
 
 _Paths respect the segmentation policy — edges the firewall denies are excluded. Cost = summed hop difficulty (unauthenticated hops are cheaper)._
@@ -135,6 +151,7 @@ _Confidence = fraction of each campaign's characteristic techniques this archite
 - `figures/network.png` — asset graph (color = Purdue level, size = impact)
 - `figures/heatmap.png` — technique exposure matrix
 - `figures/risk_matrix.png` — likelihood × impact, one point per asset
+- `attack_navigator_layer.json` — load at mitre-attack.github.io/attack-navigator for a technique-exposure heatmap
 
 ## Scope & limitations
 

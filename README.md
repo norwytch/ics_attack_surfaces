@@ -9,10 +9,11 @@ ATT&CK for ICS techniques, scores and prioritizes risk (NIST SP 800-30), and gen
 a structured vulnerability briefing. Built entirely on **public reference architectures
 and public data** — no proprietary content.
 
-**What it demonstrates:** cyber-physical threat modeling on the Purdue model, fluency with
-ATT&CK for ICS / NIST SP 800-30 / CISA KEV, segmentation and attack-path reasoning, and a
-reproducible data pipeline over public security sources. Design decisions and trade-offs are
-recorded in [ROADMAP.md](ROADMAP.md).
+**What it demonstrates:** cyber-physical threat modeling on the Purdue model and IEC 62443
+zones/conduits, fluency with ATT&CK for ICS / NIST SP 800-30 / CISA KEV, segmentation and
+attack-path reasoning, an ATT&CK Navigator layer export, and a reproducible data pipeline
+over public security sources. Design decisions and trade-offs are recorded in
+[ROADMAP.md](ROADMAP.md).
 
 ## Status
 
@@ -27,9 +28,11 @@ Real CVEs (CPE-matched, KEV-flagged) are attached from a committed snapshot **by
 
 A full generated briefing for the water-treatment model is committed at
 [`examples/water_treatment/`](examples/water_treatment/briefing.md) — executive summary,
-risk-ranked assets, IT/OT segmentation findings, ranked attack paths, CPE-matched CVEs, and
-confidence-scored threat-trend correlation. The modeled asset graph (color = Purdue level,
-size = impact):
+risk-ranked assets, IEC 62443 zones/conduits, IT/OT segmentation findings, ranked attack
+paths, CPE-matched CVEs, and confidence-scored threat-trend correlation. It also exports an
+[ATT&CK Navigator layer](examples/water_treatment/attack_navigator_layer.json) (load it at
+[attack-navigator](https://mitre-attack.github.io/attack-navigator/)). The modeled asset
+graph (color = Purdue level, size = impact):
 
 ![ICS asset graph](examples/water_treatment/figures/network.png)
 
@@ -95,7 +98,8 @@ vendors and protocols) — to demonstrate the framework generalizes.
 3. Attach CPE-matched, KEV-flagged CVEs (committed snapshot by default; `--cves` for live NVD)
 4. Score risk (NIST 800-30 Table I-2) + segmentation-aware attack-path / chokepoint analysis
 5. Correlate real campaigns (`threat_trends.yaml`) with a confidence score
-6. Generate the briefing + figures into `results/`
+6. Generate the briefing (incl. IEC 62443 zones/conduits), figures, and an ATT&CK Navigator
+   layer into `results/`
 
 ## Data sources
 

@@ -9,6 +9,7 @@ import argparse
 from pathlib import Path
 
 from .assets import load_architecture
+from .frameworks import write_navigator_layer
 from .mapping import load_rules, map_architecture
 from .report import (
     generate_briefing,
@@ -71,6 +72,7 @@ def build(arch_path="data/reference_architecture.yaml",
     plot_network(graph, scores, f"{figdir}/network.png")
     plot_exposure_heatmap(mapped, f"{figdir}/heatmap.png")
     plot_risk_matrix(scores, f"{figdir}/risk_matrix.png")
+    write_navigator_layer(arch, mapped, f"{out_dir}/attack_navigator_layer.json")
 
     return generate_briefing(arch, mapped, scores, paths, chokes, campaigns, violations,
                              f"{out_dir}/briefing.md")
