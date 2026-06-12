@@ -63,6 +63,28 @@ def test_campaign_techniques_are_current():
     assert stale == {}, f"threat_trends references non-current technique IDs: {stale}"
 
 
+@pytest.mark.skipif(
+    not os.path.exists(ATTACK_PATH),
+    reason="ATT&CK bundle not downloaded (run data_sources.fetch_attack_ics())",
+)
+def test_attack_mitigations_loaded_and_grounded(tmp_path):
+    from ics_modeler.data_sources import load_attack_mitigations
+
+    mits = load_attack_mitigations(ATTACK_PATH)
+    assert mits, "expected technique -> mitigation mappings"
+    assert "T0843" in mits and mits["T0843"]          # Program Download has mitigations
+    assert all(m["id"].startswith("M") for m in mits["T0843"])
+
+    arch, mapped = _mapped()
+    g = arch.graph()
+    scores = score_architecture(arch, g)
+    paths = path_findings(g, arch.entry_nodes, arch.target_nodes, scores)
+    text = generate_briefing(arch, mapped, scores, paths, chokepoints(g),
+                             map_campaigns_to_exposure(mapped, []), [], mits,
+                             str(tmp_path / "b.md"))
+    assert "ATT&CK-grounded mitigations" in text
+
+
 def test_generate_briefing_has_core_sections(tmp_path):
     arch, mapped = _mapped()
     g = arch.graph()
@@ -71,7 +93,7 @@ def test_generate_briefing_has_core_sections(tmp_path):
     chokes = chokepoints(g)
     campaigns = map_campaigns_to_exposure(mapped, [])
     dest = tmp_path / "briefing.md"
-    text = generate_briefing(arch, mapped, scores, paths, chokes, campaigns, [], str(dest))
+    text = generate_briefing(arch, mapped, scores, paths, chokes, campaigns, [], None, str(dest))
     for heading in ("Executive summary", "Asset inventory", "Attack-path findings",
                     "Segmentation findings", "Threat-trend mapping",
                     "mitigation recommendations", "Scope & limitations"):

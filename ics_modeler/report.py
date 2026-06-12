@@ -19,8 +19,9 @@ _LEVEL_ORDER = [  # process -> internet, for inventory grouping
 # --------------------------------------------------------------------------- #
 # Briefing
 # --------------------------------------------------------------------------- #
-def generate_briefing(architecture, mapped, scores, paths, chokepoints_,
-                      campaign_matches, violations=None, dest: str = "results/briefing.md") -> str:
+def generate_briefing(architecture, mapped, scores, paths, chokepoints_, campaign_matches,
+                      violations=None, mitigations=None,
+                      dest: str = "results/briefing.md") -> str:
     """Render the vulnerability briefing to `dest`; also returns the markdown."""
     assets = architecture.assets
     name = architecture.meta.get("name", "ICS reference architecture")
@@ -157,6 +158,17 @@ def generate_briefing(architecture, mapped, scores, paths, chokepoints_,
         L.append(f"- {rec}")
     L.append("")
 
+    # ATT&CK-grounded mitigations -------------------------------------------
+    grounded = _grounded_mitigations(mapped, mitigations or {})
+    if grounded:
+        L.append("## ATT&CK-grounded mitigations\n")
+        L.append("Countermeasures from MITRE ATT&CK for ICS for the techniques this "
+                 "architecture exposes (most techniques addressed first):\n")
+        for mid, info in grounded[:12]:
+            techs = ", ".join(sorted(info["techniques"]))
+            L.append(f"- **{mid} {info['name']}** — addresses {techs}")
+        L.append("")
+
     # Figures ---------------------------------------------------------------
     L.append("## Figures\n")
     L.append("- `figures/network.png` — asset graph (color = Purdue level, size = impact)")
@@ -217,6 +229,17 @@ def _mitigations(architecture, mapped, scores, paths, top_choke) -> list[str]:
     if not recs:
         recs.append("No high-priority findings — re-run after attaching CVE data.")
     return recs
+
+
+def _grounded_mitigations(mapped, mitigations) -> list:
+    """[(mitigation_id, {name, techniques})] for exposed techniques, most-covering first."""
+    exposed = {t["id"] for d in mapped.values() for t in d.get("techniques", [])}
+    by_mit: dict = {}
+    for tid in exposed:
+        for m in mitigations.get(tid, []):
+            entry = by_mit.setdefault(m["id"], {"name": m["name"], "techniques": set()})
+            entry["techniques"].add(tid)
+    return sorted(by_mit.items(), key=lambda kv: (-len(kv[1]["techniques"]), kv[0]))
 
 
 # --------------------------------------------------------------------------- #

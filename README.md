@@ -29,7 +29,8 @@ Real CVEs (CPE-matched, KEV-flagged) are attached from a committed snapshot **by
 A full generated briefing for the water-treatment model is committed at
 [`examples/water_treatment/`](examples/water_treatment/briefing.md) — executive summary,
 risk-ranked assets, IEC 62443 zones/conduits, IT/OT segmentation findings, ranked attack
-paths, CPE-matched CVEs, and confidence-scored threat-trend correlation. It also exports an
+paths, CPE-matched CVEs, confidence-scored threat-trend correlation, and ATT&CK-grounded
+mitigations (M-codes). It also exports an
 [ATT&CK Navigator layer](examples/water_treatment/attack_navigator_layer.json) (load it at
 [attack-navigator](https://mitre-attack.github.io/attack-navigator/)). The modeled asset
 graph (color = Purdue level, size = impact):
@@ -84,7 +85,9 @@ pytest                                   # tests
 ```
 
 CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs all three on Python
-3.10–3.12 for every push and PR.
+3.10–3.12 for every push and PR, plus [`pip-audit`](https://github.com/pypa/pip-audit)
+against the lockfile (SHA-pinned actions, Dependabot enabled). See
+[SECURITY.md](SECURITY.md) for the disclosure policy.
 
 Two reference architectures ship with the project — a transit-signaling plant
 ([data/reference_architecture.yaml](data/reference_architecture.yaml)) and a municipal

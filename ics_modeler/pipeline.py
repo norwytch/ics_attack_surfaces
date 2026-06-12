@@ -39,13 +39,14 @@ def build(arch_path="data/reference_architecture.yaml",
     # ATT&CK data is optional (gitignored download); names degrade gracefully without it.
     from .data_sources import load_cve_snapshot
 
-    attack = None
+    attack = mitigations = None
+    if not Path(attack_path).exists() and fetch_cves:
+        from .data_sources import fetch_attack_ics
+        fetch_attack_ics(attack_path)  # if we're already online, grab the bundle too
     if Path(attack_path).exists():
-        from .data_sources import load_attack_ics
+        from .data_sources import load_attack_ics, load_attack_mitigations
         attack = load_attack_ics(attack_path)
-    elif fetch_cves:  # if we're already going online, grab it too
-        from .data_sources import fetch_attack_ics, load_attack_ics
-        attack = load_attack_ics(fetch_attack_ics(attack_path))
+        mitigations = load_attack_mitigations(attack_path)
 
     kev = None
     if fetch_cves:
@@ -75,7 +76,7 @@ def build(arch_path="data/reference_architecture.yaml",
     write_navigator_layer(arch, mapped, f"{out_dir}/attack_navigator_layer.json")
 
     return generate_briefing(arch, mapped, scores, paths, chokes, campaigns, violations,
-                             f"{out_dir}/briefing.md")
+                             mitigations, f"{out_dir}/briefing.md")
 
 
 def main(argv=None) -> None:

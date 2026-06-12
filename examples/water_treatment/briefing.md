@@ -146,6 +146,23 @@ _Confidence = fraction of each campaign's characteristic techniques this archite
 - Add authentication / protocol-aware filtering for unauthenticated control assets: scada_server, operator_hmi, dosing_plc, pump_plc, distribution_rtu, chlorine_dosing_actuator, ph_sensor, distribution_pump, flow_sensor.
 - Patch actively-exploited (CISA KEV) CVEs on: dosing_plc.
 
+## ATT&CK-grounded mitigations
+
+Countermeasures from MITRE ATT&CK for ICS for the techniques this architecture exposes (most techniques addressed first):
+
+- **M0800 Authorization Enforcement** — addresses T0821, T0836, T0843, T0886
+- **M0804 Human User Authentication** — addresses T0821, T0836, T0843, T0886
+- **M0930 Network Segmentation** — addresses T0822, T0843, T0886, T1692.001
+- **M0947 Audit** — addresses T0811, T0821, T0836, T0843
+- **M0807 Network Allowlists** — addresses T0843, T0886, T1692.001
+- **M0813 Software Process and Device Authentication** — addresses T0843, T0886, T1692.001
+- **M0918 User Account Management** — addresses T0811, T0822, T0886
+- **M0937 Filter Network Traffic** — addresses T0843, T0886, T1692.001
+- **M0801 Access Management** — addresses T0843, T0886
+- **M0802 Communication Authenticity** — addresses T0843, T1692.001
+- **M0816 Mitigation Limited or Not Effective** — addresses T0823, T0835
+- **M0818 Validate Program Inputs** — addresses T0836, T1692.001
+
 ## Figures
 
 - `figures/network.png` — asset graph (color = Purdue level, size = impact)

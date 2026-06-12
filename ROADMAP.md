@@ -179,7 +179,7 @@ pin real values rather than just smoke-checking structure.
 
 ---
 
-## Tier 4 — Security credibility (in progress: #10–11 done, #12–13 queued)
+## Tier 4 — Security credibility
 
 Standard artifacts, framework alignment, and self-applied security hygiene that signal a
 real cyber project rather than a Python project about security.
@@ -205,21 +205,33 @@ and cites IEC 62443-3-3.
 **Done when — met.** The briefing presents the architecture in 62443 zone/conduit terms and
 cites the standard.
 
-### 12. Supply-chain security + SECURITY.md
+### 12. Supply-chain security + SECURITY.md — DONE
 **Why.** A security project is judged on its own hygiene; scanning its dependencies and
 publishing a disclosure policy is table stakes.
-**Plan.** Add a `pip-audit` (dependency CVE scan) job to CI, pin GitHub Actions by commit
-SHA, and add a `SECURITY.md` (supported versions, disclosure process, contact). Optionally a
-CycloneDX SBOM and Dependabot config.
-**Done when.** CI fails on a known-vulnerable dependency, and `SECURITY.md` exists.
+**What was done.** Added a `pip-audit` job to CI that audits `requirements.lock` (it caught
+a real one — pytest CVE-2025-71176, now pinned to ≥9.0.3), pinned the GitHub Actions by
+commit SHA, set `permissions: contents: read`, added `.github/dependabot.yml` (pip +
+github-actions), and a `SECURITY.md` (supported versions, private disclosure, supply-chain
+notes).
+**Done when — met.** CI fails on a known-vulnerable dependency; `SECURITY.md` exists; the
+lockfile audits clean.
 
-### 13. ATT&CK mitigations mapping
+### 13. ATT&CK mitigations mapping — DONE
 **Why.** Mapping weaknesses to techniques says what's exposed; mapping techniques to their
 ATT&CK mitigations turns that into cited countermeasures — what a real assessment delivers.
-**Plan.** Parse mitigation objects + `mitigates` relationships from the ATT&CK bundle, and in
-the briefing pair each exposed technique with its ATT&CK for ICS mitigations (M-codes) to
-ground the recommendations.
-**Done when.** Briefing recommendations cite specific ATT&CK mitigations per exposed technique.
+**What was done.** `data_sources.load_attack_mitigations` joins ATT&CK course-of-action
+(mitigation) objects to techniques via `mitigates` relationships. The briefing gained an
+"ATT&CK-grounded mitigations" section pairing each exposed technique with its ATT&CK for ICS
+M-codes (e.g. M0930 Network Segmentation, M0807 Network Allowlists), ranked by coverage.
+**Done when — met.** Briefing recommendations cite specific ATT&CK mitigations per exposed
+technique.
+
+---
+
+**Tier 4 complete.** The project now ships recognizable analyst artifacts (ATT&CK Navigator
+layer), aligns to the ICS standard (IEC 62443 zones/conduits), practices its own supply-chain
+security (pip-audit, SHA-pinned actions, Dependabot, SECURITY.md), and grounds its
+recommendations in ATT&CK mitigations.
 
 ---
 

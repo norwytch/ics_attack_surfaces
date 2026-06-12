@@ -7,6 +7,7 @@ matplotlib>=3.8,<4     # figures
 numpy>=1.26,<3         # exposure heatmap
 
 # dev tooling
-pytest>=8.0,<9
+pytest>=9.0.3,<10      # 9.0.3 fixes CVE-2025-71176
 ruff>=0.5,<1
 mypy>=1.10,<2
+pip-audit>=2.7,<3

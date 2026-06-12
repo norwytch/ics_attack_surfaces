@@ -71,6 +71,45 @@ def load_attack_ics(path: str = "data/attack_ics.json") -> dict[str, dict]:
     return techniques
 
 
+def _mitre_ref(obj) -> tuple[str | None, str | None]:
+    for ref in obj.get("external_references", []):
+        if ref.get("source_name") == "mitre-attack":
+            return ref.get("external_id"), ref.get("url")
+    return None, None
+
+
+def load_attack_mitigations(path: str = "data/attack_ics.json") -> dict[str, list[dict]]:
+    """Parse {technique_id: [mitigation {id, name, url}]} from the ATT&CK bundle.
+
+    Joins ATT&CK course-of-action (mitigation) objects to techniques via `mitigates`
+    relationships. Revoked/deprecated mitigations are dropped.
+    """
+    objs = json.loads(Path(path).read_text(encoding="utf-8")).get("objects", [])
+    mitigations: dict[str, dict] = {}
+    technique_extid: dict[str, str] = {}
+    for o in objs:
+        t = o.get("type")
+        if t == "course-of-action" and not o.get("revoked") and not o.get("x_mitre_deprecated"):
+            ext, url = _mitre_ref(o)
+            if ext and ext.startswith("M"):
+                mitigations[o["id"]] = {"id": ext, "name": o.get("name", ""), "url": url}
+        elif t == "attack-pattern":
+            ext, _ = _mitre_ref(o)
+            if ext:
+                technique_extid[o["id"]] = ext
+
+    out: dict[str, list[dict]] = {}
+    for o in objs:
+        if o.get("type") == "relationship" and o.get("relationship_type") == "mitigates":
+            mit = mitigations.get(o.get("source_ref"))
+            tech = technique_extid.get(o.get("target_ref"))
+            if mit and tech and mit["id"] not in {m["id"] for m in out.get(tech, [])}:
+                out.setdefault(tech, []).append(mit)
+    for tech in out:
+        out[tech].sort(key=lambda m: m["id"])
+    return out
+
+
 # --------------------------------------------------------------------------- #
 # CISA Known Exploited Vulnerabilities (step 5)
 # --------------------------------------------------------------------------- #
