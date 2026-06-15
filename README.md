@@ -94,6 +94,18 @@ Two reference architectures ship with the project — a transit-signaling plant
 water-treatment plant ([data/water_treatment.yaml](data/water_treatment.yaml), different
 vendors and protocols) — to demonstrate the framework generalizes.
 
+## Validation
+
+A validity experiment ([experiments/RESULTS.md](experiments/RESULTS.md), reproducible via
+`python -m experiments.validity`) ablates the scoring factors and compares the ranking
+against a trivial Purdue-criticality baseline and independent lenses (Kendall's τ-b).
+Honest headline: the priority ranking is **largely driven by process criticality**
+(τ-b ≈ 0.7 vs. the baseline, identical top-3); **authentication** is the likelihood factor
+that most changes the order, the **KEV/CVE signal is sparse and nearly inert for ranking**,
+and **criterion validity** (agreement with expert raters / real incidents) **remains
+untested**. Stating where the model's discrimination actually comes from — and where it
+doesn't — is the point.
+
 ## Pipeline
 
 1. Load + validate the architecture YAML → asset graph + segmentation policy

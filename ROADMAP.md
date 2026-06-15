@@ -235,6 +235,28 @@ recommendations in ATT&CK mitigations.
 
 ---
 
+## Tier 5 — Research rigor
+
+### 14. Validity experiment — DONE
+**Why.** The model produced scores and rankings with no evidence they are *correct*; the
+sensitivity analysis tested robustness, not validity. A reviewer's first question is "does the
+machinery beat a trivial heuristic, and which factors actually matter?"
+**What was done.** Added `experiments/validity.py` (+ reproducible
+[experiments/RESULTS.md](experiments/RESULTS.md)) with a from-scratch Kendall's τ-b instrument
+(itself unit-tested). It runs an **ablation** (drop each scoring factor, measure ranking
+change), a **discriminant** check (vs a Purdue-criticality-only baseline), a **convergent**
+check (vs betweenness / entry-distance / CVE-severity lenses), and a **face-validity** check
+on the Oldsmar pattern.
+**Findings (honest).** The ranking tracks the trivial criticality baseline at τ-b ≈ 0.7 with
+an identical top-3 — process criticality does most of the work; **authentication** is the most
+influential likelihood factor; the **KEV/CVE signal is sparse and nearly inert for ranking**;
+convergent agreement with independent lenses is weak; criterion validity is untested.
+**Still open.** Criterion validity (expert raters or labelled incidents), realistic-scale
+architectures, and version-aware CVE matching — see the research critique. These are genuine
+gaps, deliberately surfaced rather than hidden.
+
+---
+
 ## Explicitly out of scope (for now)
 
 - Live network/traffic analysis — this is a static, model-based tool by design.
