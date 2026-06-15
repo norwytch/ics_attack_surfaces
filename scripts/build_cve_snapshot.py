@@ -17,7 +17,8 @@ from pathlib import Path
 from ics_modeler.assets import load_architecture
 from ics_modeler.data_sources import fetch_epss, fetch_kev_catalog, lookup_cves_by_cpe
 
-ARCHES = ["data/reference_architecture.yaml", "data/water_treatment.yaml"]
+ARCHES = ["data/reference_architecture.yaml", "data/water_treatment.yaml",
+          "data/metro_signaling.yaml"]
 DEST = "data/cve_snapshot.json"
 
 

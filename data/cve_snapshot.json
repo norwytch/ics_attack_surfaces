@@ -433,6 +433,10 @@
         "epss": 0.2314,
         "epss_pctl": 0.9607
       }
-    ]
+    ],
+    "Thales:SelTrac:7.0": [],
+    "Siemens:Trainguard MT:3.0": [],
+    "Siemens:SICAS:2.0": [],
+    "Thales:SelTrac DCS:7.0": []
   }
 }

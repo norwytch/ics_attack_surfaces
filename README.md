@@ -90,11 +90,13 @@ Python 3.10–3.12 for every push and pull request, plus
 pinned by commit SHA and Dependabot is enabled. See [SECURITY.md](SECURITY.md) for the
 disclosure policy.
 
-Two reference architectures ship with the project: a transit-signaling plant
-([data/reference_architecture.yaml](data/reference_architecture.yaml)) and a municipal
-water-treatment plant ([data/water_treatment.yaml](data/water_treatment.yaml), with
-different vendors and protocols). Running on both is how the project checks that the approach
-generalizes beyond a single hand-tuned example.
+Three reference architectures ship with the project, each with different vendors and
+protocols: a transit-signaling plant
+([data/reference_architecture.yaml](data/reference_architecture.yaml)), a municipal
+water-treatment plant ([data/water_treatment.yaml](data/water_treatment.yaml)), and a CBTC
+metro signaling system ([data/metro_signaling.yaml](data/metro_signaling.yaml), built from
+IEEE 1474 / IEC 62290 / CENELEC standards). Running on all three is how the project checks
+that the approach generalizes beyond a single hand-tuned example.
 
 ## Validation
 

@@ -35,6 +35,7 @@ from ics_modeler.scoring import (
 ARCHES = {
     "Transit signaling": "data/reference_architecture.yaml",
     "Water treatment": "data/water_treatment.yaml",
+    "Metro signaling": "data/metro_signaling.yaml",
 }
 
 
@@ -207,7 +208,7 @@ def run() -> str:
                  "changed no band or rank as a weight, so KEV CVEs now escalate the band directly.")
     lines.append("- There is **no independent corroboration** that the combined ranking is right; "
                  "convergent agreement with structural and vulnerability lenses is weak by design.")
-    lines.append("- Architectures are **n=2, synthetic, single-author**, so face validity is weak. "
+    lines.append("- Architectures are **synthetic and single-author**, so face validity is weak. "
                  "Criterion validity (vs expert raters or real incidents) remains untested.\n")
 
     Path("experiments/RESULTS.md").write_text("\n".join(lines), encoding="utf-8")

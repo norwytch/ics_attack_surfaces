@@ -10,8 +10,9 @@ Two gaps left by the ablation in `validity.py`: segmentation was never ablated, 
 |---|---:|---:|---:|---|
 | Transit signaling | 8 | 8 | 0 | none |
 | Water treatment | 8 | 8 | 0 | remote_access_host->scada_server |
+| Metro signaling | 8 | 8 | 0 | maintenance_laptop->ats_server |
 
-**Finding.** On both reference plants the policy excludes **0** attack paths — the segmentation model does not constrain the modeled attacks here. Its real contribution is **bypass detection** (the water plant's IT→OT VPN crossing) plus directed, cost-weighted path ranking. The path-exclusion capability is genuine and unit-tested (`test_deny_boundary_blocks_path`) but does not fire on these architectures. Honest takeaway: 'policy-respecting paths' is a real capability, not a result that changes these two cases.
+**Finding.** On every reference plant the policy excludes **0** attack paths — the segmentation model does not constrain the modeled attacks here. Its real contribution is **bypass detection** (e.g. the water plant's IT→OT VPN crossing, the metro's maintenance-laptop bridge) plus directed, cost-weighted path ranking. The path-exclusion capability is genuine and unit-tested (`test_deny_boundary_blocks_path`) but does not fire on these architectures. 'Policy-respecting paths' is a real capability, not a result that changes these cases.
 
 ## (B) The KEV factor: from inert weight to band escalator
 

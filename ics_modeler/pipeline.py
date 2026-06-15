@@ -101,9 +101,9 @@ def main(argv=None) -> None:
                     help="enrich with live NVD CVEs + CISA KEV (network, slower)")
     ap.add_argument("--out", default="results", help="output directory")
     args = ap.parse_args(argv)
-    dest = build(arch_path=args.arch, rules_path=args.rules, trends_path=args.trends,
-                 out_dir=args.out, fetch_cves=args.cves)
-    print(f"Briefing written to {dest}")
+    build(arch_path=args.arch, rules_path=args.rules, trends_path=args.trends,
+          out_dir=args.out, fetch_cves=args.cves)
+    print(f"Briefing written to {args.out}/briefing.md")
     print(f"Figures written to {args.out}/figures/")
 
 

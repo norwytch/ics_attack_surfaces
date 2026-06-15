@@ -12,7 +12,8 @@ from ics_modeler.mapping import (
 )
 
 ATTACK_PATH = "data/attack_ics.json"
-ARCHES = ["data/reference_architecture.yaml", "data/water_treatment.yaml"]
+ARCHES = ["data/reference_architecture.yaml", "data/water_treatment.yaml",
+          "data/metro_signaling.yaml"]
 OT_PROTOCOLS = {"Modbus", "DNP3", "EtherNet/IP", "S7comm"}
 
 ARCH_PATH = "data/reference_architecture.yaml"

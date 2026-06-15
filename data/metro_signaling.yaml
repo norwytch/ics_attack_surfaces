@@ -1,0 +1,209 @@
+# Third reference architecture: a CBTC (Communications-Based Train Control) metro signaling
+# system, built from PUBLIC architecture standards, not any real transit agency's network.
+#
+#   - IEEE 1474 / IEC 62290 (CBTC functional and system requirements)
+#   - CENELEC EN 50126 / 50128 / 50129 (rail RAMS and safety-related systems)
+#
+# Structure (Purdue mapping of a metro signaling plant):
+#   L2  ATS (Automatic Train Supervision) control centre + dispatcher HMIs; traction-power SCADA
+#   L1  Zone Controllers, Computer-Based Interlocking, wayside data-comm (DCS), substation RTU
+#   L0  signals, point (switch) machines, axle counters, track circuits, third-rail breaker
+#   L3  signalling historian / asset-management; L3.5 DMZ; L4 enterprise; L5 internet
+#
+# Deliberate, documented-in-the-literature weak spot: a roaming maintenance/diagnostics laptop
+# reaches the ATS supervisory network directly, bypassing the DMZ (an IT/OT bridge). The tool
+# should flag it. Rail-specific products (Siemens/Thales/Alstom) have sparse public CVE
+# coverage, which the briefing will reflect honestly.
+
+meta:
+  name: "Metro CBTC Signaling Reference System"
+  description: "Illustrative CBTC metro signalling + traction-power SCADA, public standards only."
+
+entry_nodes: [internet, maintenance_laptop]
+target_nodes: [interlocking_main, zone_controller_a]
+
+segmentation:
+  default: allow
+  boundaries:
+    - between: [L4_ENTERPRISE, L3_5_DMZ]
+      allow_protocols: [HTTPS, SQL]
+    - between: [L3_5_DMZ, L3_OPERATIONS]
+      allow_protocols: [SQL, OPC]
+
+assets:
+  - name: internet
+    level: L5_INTERNET
+    component_type: firewall
+    protocols: [HTTPS]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [corporate_it]
+
+  - name: corporate_it
+    level: L4_ENTERPRISE
+    component_type: workstation
+    protocols: [HTTPS, RDP]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [internet, engineering_ws, dmz_historian]
+
+  - name: engineering_ws
+    level: L4_ENTERPRISE
+    component_type: workstation
+    protocols: [HTTPS, RDP]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [corporate_it, maintenance_laptop]
+
+  - name: maintenance_laptop
+    level: L4_ENTERPRISE
+    component_type: jump_host
+    protocols: [RDP, VNC]
+    authenticated: false                 # shared diagnostics credentials, no MFA
+    exposed_interfaces: [network, remote_access]
+    connections: [engineering_ws, ats_server]   # bridges enterprise IT into the signalling LAN
+
+  - name: dmz_historian
+    level: L3_5_DMZ
+    component_type: historian
+    vendor: "AVEVA"
+    product: "Historian"
+    version: "2020"
+    protocols: [HTTPS, SQL]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [corporate_it, sig_historian]
+
+  - name: vendor_remote
+    level: L3_5_DMZ
+    component_type: jump_host
+    protocols: [RDP, SSH]
+    authenticated: false
+    exposed_interfaces: [network, remote_access]
+    connections: [ats_server]            # CBTC vendor remote support into the control centre
+
+  - name: sig_historian
+    level: L3_OPERATIONS
+    component_type: historian
+    vendor: "AVEVA"
+    product: "Historian"
+    version: "2020"
+    protocols: [SQL, OPC]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [dmz_historian, ats_server]
+
+  - name: ats_server
+    level: L2_SUPERVISORY
+    component_type: SCADA_server
+    vendor: "Thales"
+    product: "SelTrac"
+    version: "7.0"
+    protocols: [OPC, Modbus]
+    authenticated: false
+    exposed_interfaces: [network]
+    connections: [sig_historian, maintenance_laptop, vendor_remote, dispatcher_hmi,
+                  zone_controller_a, interlocking_main]
+
+  - name: dispatcher_hmi
+    level: L2_SUPERVISORY
+    component_type: HMI
+    vendor: "Thales"
+    product: "SelTrac"
+    version: "7.0"
+    protocols: [OPC]
+    authenticated: false
+    exposed_interfaces: [network, local]
+    connections: [ats_server]
+
+  - name: traction_power_scada
+    level: L2_SUPERVISORY
+    component_type: SCADA_server
+    protocols: [OPC, DNP3]
+    authenticated: false
+    exposed_interfaces: [network]
+    connections: [sig_historian, substation_rtu]
+
+  - name: zone_controller_a
+    level: L1_CONTROL
+    component_type: PLC
+    vendor: "Siemens"
+    product: "Trainguard MT"
+    version: "3.0"
+    protocols: [S7comm]
+    authenticated: false
+    exposed_interfaces: [network]
+    connections: [ats_server, wayside_radio, axle_counter_a]
+
+  - name: interlocking_main
+    level: L1_CONTROL
+    component_type: PLC
+    vendor: "Siemens"
+    product: "SICAS"
+    version: "2.0"
+    protocols: [S7comm, Modbus]
+    authenticated: false
+    exposed_interfaces: [network]
+    connections: [ats_server, track_signal, point_machine, track_circuit]
+
+  - name: wayside_radio
+    level: L1_CONTROL
+    component_type: RTU
+    vendor: "Thales"
+    product: "SelTrac DCS"
+    version: "7.0"
+    protocols: [DNP3]
+    authenticated: false
+    exposed_interfaces: [network, radio]    # data-comm system to the on-board controllers
+    connections: [zone_controller_a]
+
+  - name: substation_rtu
+    level: L1_CONTROL
+    component_type: RTU
+    vendor: "GE"
+    product: "D20 RTU"
+    version: "5.0"
+    protocols: [DNP3]
+    authenticated: false
+    exposed_interfaces: [network]
+    connections: [traction_power_scada, third_rail_breaker]
+
+  - name: axle_counter_a
+    level: L0_PROCESS
+    component_type: sensor
+    protocols: [S7comm]
+    authenticated: false
+    exposed_interfaces: [field]
+    connections: [zone_controller_a]
+
+  - name: track_signal
+    level: L0_PROCESS
+    component_type: actuator
+    protocols: [S7comm]
+    authenticated: false
+    exposed_interfaces: [field]
+    connections: [interlocking_main]
+
+  - name: point_machine
+    level: L0_PROCESS
+    component_type: actuator
+    protocols: [S7comm]
+    authenticated: false
+    exposed_interfaces: [field]
+    connections: [interlocking_main]
+
+  - name: track_circuit
+    level: L0_PROCESS
+    component_type: sensor
+    protocols: [S7comm]
+    authenticated: false
+    exposed_interfaces: [field]
+    connections: [interlocking_main]
+
+  - name: third_rail_breaker
+    level: L0_PROCESS
+    component_type: actuator
+    protocols: [DNP3]
+    authenticated: false
+    exposed_interfaces: [field]
+    connections: [substation_rtu]

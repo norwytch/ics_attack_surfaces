@@ -28,6 +28,7 @@ from ics_modeler.scoring import (
 ARCHES = {
     "Transit signaling": "data/reference_architecture.yaml",
     "Water treatment": "data/water_treatment.yaml",
+    "Metro signaling": "data/metro_signaling.yaml",
 }
 
 
@@ -74,13 +75,14 @@ def run() -> str:
         bp = ", ".join(s["bypass_findings"]) or "none"
         L.append(f"| {title} | {s['paths_naive_topology']} | {s['paths_policy']} | "
                  f"{s['excluded_by_policy']} | {bp} |")
-    L.append("\n**Finding.** On both reference plants the policy excludes **0** attack paths — "
+    L.append("\n**Finding.** On every reference plant the policy excludes **0** attack paths — "
              "the segmentation model does not constrain the modeled attacks here. Its real "
-             "contribution is **bypass detection** (the water plant's IT→OT VPN crossing) plus "
-             "directed, cost-weighted path ranking. The path-exclusion capability is genuine and "
-             "unit-tested (`test_deny_boundary_blocks_path`) but does not fire on these "
-             "architectures. Honest takeaway: 'policy-respecting paths' is a real capability, not "
-             "a result that changes these two cases.\n")
+             "contribution is **bypass detection** (e.g. the water plant's IT→OT VPN crossing, "
+             "the metro's maintenance-laptop bridge) plus directed, cost-weighted path ranking. "
+             "The path-exclusion capability is genuine and unit-tested "
+             "(`test_deny_boundary_blocks_path`) but does not fire on these architectures. "
+             "'Policy-respecting paths' is a real capability, not a result that changes these "
+             "cases.\n")
 
     L.append("## (B) The KEV factor: from inert weight to band escalator\n")
     L.append("As a weighted likelihood factor, KEV changed no band or rank even for the asset "
