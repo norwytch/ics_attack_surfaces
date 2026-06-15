@@ -15,7 +15,7 @@ Two gaps left by the ablation in `validity.py`: segmentation was never ablated, 
 
 ## (B) The KEV factor: from inert weight to band escalator
 
-As a weighted likelihood factor, KEV changed no band or rank even for the asset carrying a KEV CVE (aggregate tau-b ~0.95). It was therefore **removed as a weight** and re-applied as a **band escalator** (actively-exploited → +1 band, per CISA BOD 22-01). With the escalator OFF vs ON:
+As a weighted likelihood factor, KEV changed no band or rank even for the asset carrying a KEV CVE (aggregate tau-b ~0.95). It was therefore **removed as a weight** and re-applied as a **band escalator** (actively-exploited → +1 band, per CISA BOD 22-01; later extended to top-percentile EPSS — see data/risk_rubric.md). With the escalator OFF vs ON:
 
 | architecture | KEV asset | band off→on | rank off→on |
 |---|---|---|---|

@@ -86,7 +86,8 @@ def run() -> str:
     L.append("As a weighted likelihood factor, KEV changed no band or rank even for the asset "
              "carrying a KEV CVE (aggregate tau-b ~0.95). It was therefore **removed as a weight** "
              "and re-applied as a **band escalator** (actively-exploited → +1 band, per CISA "
-             "BOD 22-01). With the escalator OFF vs ON:\n")
+             "BOD 22-01; later extended to top-percentile EPSS — see data/risk_rubric.md). "
+             "With the escalator OFF vs ON:\n")
     L.append("| architecture | KEV asset | band off→on | rank off→on |")
     L.append("|---|---|---|---|")
     any_kev = False
