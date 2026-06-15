@@ -1,0 +1,107 @@
+# Reconstruction of the 2015 Ukraine power-grid cyberattack victim architecture,
+# built from PUBLIC incident reporting (not reverse-engineered from tool output):
+#
+#   - E-ISAC / SANS ICS, "Analysis of the Cyber Attack on the Ukrainian Power Grid"
+#     (Lee, Assante, Conway), 18 March 2016.
+#   - ICS-CERT alert IR-ALERT-H-16-056-01.
+#
+# This is a CRITERION-VALIDITY test fixture (see experiments/criterion_validity.py):
+# the topology reflects the documented systems and connections, and the ground truth is
+# the documented attack. The tool is run UNCHANGED; the question is whether it independently
+# surfaces the real path, assets, and root cause.
+#
+# Documented kill chain (summarized): spear-phish (BlackEnergy3) into the business network →
+# theft of VPN credentials → VPN into the ICS network WITHOUT multi-factor auth → operator
+# HMI / SCADA used to open ~breakers across distribution substations → firmware of
+# serial-to-ethernet converters overwritten to block recovery; KillDisk wipes workstations.
+#
+# Protocol note: distribution SCADA in the region commonly used DNP3 / IEC-60870; modeled as
+# DNP3 here (covered by the mapping rules). The breakers were operated via the SCADA/HMI.
+
+meta:
+  name: "Ukraine 2015 Power Distribution (incident reconstruction)"
+  description: "Victim architecture reconstructed from public reporting; not a real network."
+
+entry_nodes: [internet, corporate_workstation]   # spear-phish lands in business IT
+target_nodes: [breaker, substation_rtu]          # physical impact = breakers opened
+
+assets:
+  - name: internet
+    level: L5_INTERNET
+    component_type: firewall
+    protocols: [HTTPS]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [corporate_workstation]
+
+  - name: corporate_workstation
+    level: L4_ENTERPRISE
+    component_type: workstation
+    protocols: [HTTPS, SMB]
+    authenticated: true
+    exposed_interfaces: [network, email]      # phishing landing
+    connections: [internet, business_server, vpn_gateway]
+
+  - name: business_server
+    level: L4_ENTERPRISE
+    component_type: server
+    protocols: [SMB, LDAP]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [corporate_workstation]
+
+  - name: vpn_gateway
+    level: L4_ENTERPRISE
+    component_type: jump_host
+    protocols: [VPN, RDP]
+    authenticated: false                      # the documented failure: VPN into ICS without MFA
+    exposed_interfaces: [network, remote_access]
+    connections: [corporate_workstation, scada_dms_server]   # bridges business IT into OT
+
+  - name: scada_dms_server
+    level: L2_SUPERVISORY
+    component_type: SCADA_server
+    protocols: [DNP3, ICCP]
+    authenticated: false
+    exposed_interfaces: [network]
+    connections: [vpn_gateway, operator_hmi, historian, substation_rtu]
+
+  - name: operator_hmi
+    level: L2_SUPERVISORY
+    component_type: HMI
+    protocols: [DNP3]
+    authenticated: false
+    exposed_interfaces: [network, local]
+    connections: [scada_dms_server]
+
+  - name: historian
+    level: L3_OPERATIONS
+    component_type: historian
+    protocols: [SQL, ICCP]
+    authenticated: true
+    exposed_interfaces: [network]
+    connections: [scada_dms_server]
+
+  - name: substation_rtu
+    level: L1_CONTROL
+    component_type: RTU
+    protocols: [DNP3]
+    authenticated: false
+    exposed_interfaces: [network]
+    connections: [scada_dms_server, serial_ethernet_converter, breaker]
+
+  - name: serial_ethernet_converter
+    level: L1_CONTROL
+    component_type: RTU
+    protocols: [DNP3]
+    authenticated: false
+    exposed_interfaces: [network, serial]     # firmware overwritten to block recovery
+    connections: [substation_rtu, breaker]
+
+  - name: breaker
+    level: L0_PROCESS
+    component_type: actuator
+    protocols: [DNP3]
+    authenticated: false
+    exposed_interfaces: [field]
+    connections: [substation_rtu, serial_ethernet_converter]

@@ -251,9 +251,24 @@ on the Oldsmar pattern.
 an identical top-3 — process criticality does most of the work; **authentication** is the most
 influential likelihood factor; the **KEV/CVE signal is sparse and nearly inert for ranking**;
 convergent agreement with independent lenses is weak; criterion validity is untested.
-**Still open.** Criterion validity (expert raters or labelled incidents), realistic-scale
-architectures, and version-aware CVE matching — see the research critique. These are genuine
-gaps, deliberately surfaced rather than hidden.
+### 15. Criterion validity vs a documented incident — DONE
+**Why.** Validity item #14 explicitly could not test agreement with a real attack. Criterion
+validity needs an externally-documented incident as ground truth.
+**What was done.** Reconstructed the **2015 Ukraine power-grid attack** victim architecture
+from public reporting (E-ISAC/SANS; ICS-CERT IR-ALERT-H-16-056-01) in
+`experiments/ukraine_2015.yaml`, defined the ground truth from the report, and ran the
+**unchanged** tool (`experiments/criterion_validity.py`,
+[experiments/CRITERION_RESULTS.md](experiments/CRITERION_RESULTS.md)). Measured: root-cause
+flag, attack-path recovery (LCS over documented waypoints), critical-asset recall, and
+technique recall.
+**Findings.** The tool independently flags the VPN IT→OT bypass (the documented root cause),
+recovers 100% of the documented waypoints in order, and assigns all mappable documented OT
+techniques. Honestly scoped: reconstruction-based (not blind), n=1, and IT-stage / firmware /
+wiper techniques are out of the tool's OT-exposure scope.
+
+**Still open.** Realistic-scale architectures, version-aware CVE matching, and a *blind*
+criterion test (architecture authored by someone other than the tool author) — genuine gaps,
+deliberately surfaced rather than hidden.
 
 ---
 

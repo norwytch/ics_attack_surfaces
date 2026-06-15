@@ -102,9 +102,16 @@ against a trivial Purdue-criticality baseline and independent lenses (Kendall's 
 Honest headline: the priority ranking is **largely driven by process criticality**
 (τ-b ≈ 0.7 vs. the baseline, identical top-3); **authentication** is the likelihood factor
 that most changes the order, the **KEV/CVE signal is sparse and nearly inert for ranking**,
-and **criterion validity** (agreement with expert raters / real incidents) **remains
-untested**. Stating where the model's discrimination actually comes from — and where it
-doesn't — is the point.
+authentication is the likelihood factor that most changes the order, and the KEV/CVE signal
+is sparse and nearly inert for ranking.
+
+A second experiment ([experiments/CRITERION_RESULTS.md](experiments/CRITERION_RESULTS.md),
+`python -m experiments.criterion_validity`) runs the **unchanged** tool on a reconstruction
+of the **2015 Ukraine power-grid attack** and checks it against the documented incident
+(E-ISAC/SANS): it independently **flags the VPN IT→OT bypass** (the documented root cause),
+**recovers 100% of the documented attack-path waypoints in order**, and assigns the
+documented OT techniques — with honest caveats (n=1, reconstruction-based, and the IT-stage /
+firmware / wiper techniques are out of the tool's modeled scope).
 
 ## Pipeline
 

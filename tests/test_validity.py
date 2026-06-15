@@ -27,3 +27,14 @@ def test_top_k_overlap():
     assert top_k_overlap(a, b, 2) == 1.0
     c = {"x": 1, "y": 1, "z": 9}
     assert top_k_overlap(a, c, 1) == 0.0
+
+
+def test_criterion_ukraine_flags_documented_root_cause():
+    # guards the criterion-validity headline: the tool independently flags the VPN IT->OT
+    # bypass that the 2015 Ukraine report identified as the root cause.
+    from ics_modeler.assets import load_architecture
+    from ics_modeler.scoring import segmentation_violations
+
+    arch = load_architecture("experiments/ukraine_2015.yaml")
+    viols = {(v["from"], v["to"]) for v in segmentation_violations(arch)}
+    assert ("vpn_gateway", "scada_dms_server") in viols
