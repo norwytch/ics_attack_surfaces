@@ -80,7 +80,7 @@ def test_attack_mitigations_loaded_and_grounded(tmp_path):
     scores = score_architecture(arch, g)
     paths = path_findings(g, arch.entry_nodes, arch.target_nodes, scores)
     text = generate_briefing(arch, mapped, scores, paths, chokepoints(g),
-                             map_campaigns_to_exposure(mapped, []), [], mits,
+                             map_campaigns_to_exposure(mapped, []), [], mits, None,
                              str(tmp_path / "b.md"))
     assert "ATT&CK-grounded mitigations" in text
 
@@ -93,7 +93,8 @@ def test_generate_briefing_has_core_sections(tmp_path):
     chokes = chokepoints(g)
     campaigns = map_campaigns_to_exposure(mapped, [])
     dest = tmp_path / "briefing.md"
-    text = generate_briefing(arch, mapped, scores, paths, chokes, campaigns, [], None, str(dest))
+    text = generate_briefing(arch, mapped, scores, paths, chokes, campaigns, [], None, None,
+                             str(dest))
     for heading in ("Executive summary", "Asset inventory", "Attack-path findings",
                     "Segmentation findings", "Threat-trend mapping",
                     "mitigation recommendations", "Scope & limitations"):
@@ -123,6 +124,18 @@ def test_pipeline_build_second_architecture(tmp_path):
     briefing = (tmp_path / "briefing.md").read_text()
     assert "Water Treatment" in briefing
     assert (tmp_path / "figures" / "network.png").exists()
+
+
+def test_version_status_filters_by_version():
+    from ics_modeler.data_sources import _version_status
+
+    base = "cpe:2.3:o:siemens:simatic"
+    cve = {"configurations": [{"nodes": [{"cpeMatch": [
+        {"vulnerable": True, "criteria": "cpe:2.3:o:siemens:simatic:*:*:*:*:*:*:*:*",
+         "versionEndExcluding": "3.0"}]}]}]}
+    assert _version_status("2.9", cve, base) == "confirmed"      # 2.9 < 3.0
+    assert _version_status("3.5", cve, base) == "not-affected"   # 3.5 >= 3.0
+    assert _version_status("", cve, base) == "unconfirmed"       # no asset version
 
 
 def test_cve_snapshot_present_and_nonempty():

@@ -1,449 +1,355 @@
 {
-  "AVEVA:Historian:2020": [
-    {
-      "id": "CVE-2020-13499",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "An SQL injection vulnerability exists in the CHaD.asmx web service functionality of eDNA Enterprise Data Historian 3.0.1.2/7.5.4989.33053. Specially crafted SOAP web requests can cause SQL injections resulting in data compromise. Parameter InstancePath in CHaD.asmx is vulnerable to unauthenticated SQL injection attacks."
-    },
-    {
-      "id": "CVE-2020-13500",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "SQL injection vulnerability exists in the CHaD.asmx web service functionality of eDNA Enterprise Data Historian 3.0.1.2/7.5.4989.33053. Specially crafted SOAP web requests can cause SQL injections resulting in data compromise. Parameter ClassName in CHaD.asmx is vulnerable to unauthenticated SQL injection attacks."
-    },
-    {
-      "id": "CVE-2020-13501",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "An SQL injection vulnerability exists in the CHaD.asmx web service functionality of eDNA Enterprise Data Historian 3.0.1.2/7.5.4989.33053. Specially crafted SOAP web requests can cause SQL injections resulting in data compromise. Parameter InstanceName in CHaD.asmx is vulnerable to unauthenticated SQL injection attacks."
-    },
-    {
-      "id": "CVE-2020-13504",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "Parameter AttFilterValue in ednareporting.asmx is vulnerable to unauthenticated SQL injection attacks. Specially crafted SOAP web requests can cause SQL injections resulting in data compromise. An attacker can send unauthenticated HTTP requests to trigger this vulnerability."
-    },
-    {
-      "id": "CVE-2020-13505",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "Parameter psClass in ednareporting.asmx is vulnerable to unauthenticated SQL injection attacks. Specially crafted SOAP web requests can cause SQL injections resulting in data compromise. An attacker can send unauthenticated HTTP requests to trigger this vulnerability."
-    }
-  ],
-  "AVEVA:InTouch:2020": [
-    {
-      "id": "CVE-2017-5158",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "An Information Exposure issue was discovered in Schneider Electric Wonderware InTouch Access Anywhere, version 11.5.2 and prior. Credentials may be exposed to external systems via specific URL parameters, as arbitrary destination addresses may be specified."
-    },
-    {
-      "id": "CVE-2017-5156",
-      "cvss": 8.8,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "A Cross-Site Request Forgery issue was discovered in Schneider Electric Wonderware InTouch Access Anywhere, version 11.5.2 and prior. The client request may be forged from a different site. This will allow an external site to access internal RDP systems on behalf of the currently logged in user."
-    },
-    {
-      "id": "CVE-2017-5160",
-      "cvss": 5.3,
-      "severity": "MEDIUM",
-      "known_exploited": false,
-      "description": "An Inadequate Encryption Strength issue was discovered in Schneider Electric Wonderware InTouch Access Anywhere, version 11.5.2 and prior. The software will connect via Transport Layer Security without verifying the peer's SSL certificate properly."
-    }
-  ],
-  "Schneider Electric:Modicon M340:3.20": [
-    {
-      "id": "CVE-2018-7241",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "Hard coded accounts exist in Schneider Electric's Modicon Premium, Modicon Quantum, Modicon M340, and BMXNOR0200 controllers in all versions of the communication modules."
-    },
-    {
-      "id": "CVE-2018-7242",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "Vulnerable hash algorithms exists in Schneider Electric's Modicon Premium, Modicon Quantum, Modicon M340, and BMXNOR0200 controllers in all versions of the communication modules. The algorithm used to encrypt the password is vulnerable to hash collision attacks."
-    },
-    {
-      "id": "CVE-2018-7760",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "An authorization bypass vulnerability exists in Schneider Electric's Modicon M340, Modicon Premium, Modicon Quantum PLC, BMXNOR0200. Requests to CGI functions allow malicious users to bypass authorization."
-    },
-    {
-      "id": "CVE-2018-7761",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "A vulnerability exists in the HTTP request parser in Schneider Electric's Modicon M340, Modicon Premium, Modicon Quantum PLC, BMXNOR0200 which could allow arbitrary code execution."
-    },
-    {
-      "id": "CVE-2020-7533",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "CWE-287: Improper Authentication vulnerability exists which could cause the execution of\ncommands on the webserver without authentication when sending specially crafted HTTP\nrequests."
-    },
-    {
-      "id": "CVE-2020-7540",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "A CWE-306: Missing Authentication for Critical Function vulnerability exists in the Web Server on Modicon M340, Legacy Offers Modicon Quantum and Modicon Premium and associated Communication Modules (see security notification for affected versions), that could cause unauthenticated command execution in the controller when sending special HTTP requests."
-    },
-    {
-      "id": "CVE-2022-37300",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "A CWE-640: Weak Password Recovery Mechanism for Forgotten Password vulnerability exists that could cause unauthorized access in read and write mode to the controller when communicating over Modbus. Affected Products: EcoStruxure Control Expert Including all Unity Pro versions (former name of EcoStruxure Control Expert) (V15.0 SP1 and prior), EcoStruxure Process Expert, Including all versions of EcoStruxure Hybrid DCS (former name of EcoStruxure Process Expert) (V2021 and prior), Modicon M340 CPU (part numbers BMXP34*) (V3.40 and prior), Modicon M580 CPU (part numbers BMEP* and BMEH*) (V3.20 and prior)."
-    },
-    {
-      "id": "CVE-2021-22779",
-      "cvss": 9.1,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "Authentication Bypass by Spoofing vulnerability exists in EcoStruxure Control Expert (all versions prior to V15.0 SP1, including all versions of Unity Pro), EcoStruxure Control Expert V15.0 SP1, EcoStruxure Process Expert (all versions, including all versions of EcoStruxure Hybrid DCS), SCADAPack RemoteConnect for x70 (all versions), Modicon M580 CPU (all versions - part numbers BMEP* and BMEH*), Modicon M340 CPU (all versions - part numbers BMXP34*), that could cause unauthorized access in read and write mode to the controller by spoofing the Modbus communication between the engineering software and the controller."
-    },
-    {
-      "id": "CVE-2022-45789",
-      "cvss": 8.1,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "A CWE-294: Authentication Bypass by Capture-replay vulnerability exists that could cause execution of unauthorized Modbus functions on the controller when hijacking an authenticated Modbus session. Affected Products: EcoStruxure Control Expert (All Versions), EcoStruxure Process Expert (All Versions), Modicon M340 CPU - part numbers BMXP34* (All Versions), Modicon M580 CPU - part numbers BMEP* and BMEH* (All Versions), Modicon M580 CPU Safety - part numbers BMEP58*S and BMEH58*S (All Versions)\n\n"
-    },
-    {
-      "id": "CVE-2023-6408",
-      "cvss": 8.1,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "\nCWE-924: Improper Enforcement of Message Integrity During Transmission in a\nCommunication Channel vulnerability exists that could cause a denial of service and loss of\nconfidentiality, integrity of controllers when conducting a Man in the Middle attack.\n\n"
-    }
-  ],
-  "Siemens:SIMATIC S7-1500:2.9": [
-    {
-      "id": "CVE-2014-2251",
-      "cvss": 8.3,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "The random-number generator on Siemens SIMATIC S7-1500 CPU PLC devices with firmware before 1.5.0 does not have sufficient entropy, which makes it easier for remote attackers to defeat cryptographic protection mechanisms and hijack sessions via unspecified vectors."
-    },
-    {
-      "id": "CVE-2014-2255",
-      "cvss": 7.8,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "Siemens SIMATIC S7-1500 CPU PLC devices with firmware before 1.5.0 allow remote attackers to cause a denial of service (defect-mode transition) via crafted HTTP packets."
-    },
-    {
-      "id": "CVE-2014-2257",
-      "cvss": 7.8,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "Siemens SIMATIC S7-1500 CPU PLC devices with firmware before 1.5.0 allow remote attackers to cause a denial of service (defect-mode transition) via crafted ISO-TSAP packets."
-    },
-    {
-      "id": "CVE-2014-2259",
-      "cvss": 7.8,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "Siemens SIMATIC S7-1500 CPU PLC devices with firmware before 1.5.0 allow remote attackers to cause a denial of service (defect-mode transition) via crafted HTTPS packets."
-    },
-    {
-      "id": "CVE-2016-2200",
-      "cvss": 7.5,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "Siemens SIMATIC S7-1500 CPU devices before 1.8.3 allow remote attackers to cause a denial of service (STOP mode transition) via crafted packets on TCP port 102."
-    },
-    {
-      "id": "CVE-2019-10936",
-      "cvss": 7.5,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "Affected devices improperly handle large amounts of specially crafted UDP packets.\r\n\r\nThis could allow an unauthenticated remote attacker to trigger a denial of service condition."
-    },
-    {
-      "id": "CVE-2014-5074",
-      "cvss": 7.1,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "Siemens SIMATIC S7-1500 CPU devices with firmware before 1.6 allow remote attackers to cause a denial of service (device restart and STOP transition) via crafted TCP packets."
-    },
-    {
-      "id": "CVE-2014-2253",
-      "cvss": 6.1,
-      "severity": "MEDIUM",
-      "known_exploited": false,
-      "description": "Siemens SIMATIC S7-1500 CPU PLC devices with firmware before 1.5.0 allow remote attackers to cause a denial of service (defect-mode transition) via crafted Profinet packets."
-    },
-    {
-      "id": "CVE-2014-2247",
-      "cvss": 5.8,
-      "severity": "MEDIUM",
-      "known_exploited": false,
-      "description": "The integrated web server on Siemens SIMATIC S7-1500 CPU PLC devices with firmware before 1.5.0 allows remote attackers to inject headers via unspecified vectors."
-    },
-    {
-      "id": "CVE-2014-2249",
-      "cvss": 5.8,
-      "severity": "MEDIUM",
-      "known_exploited": false,
-      "description": "Cross-site request forgery (CSRF) vulnerability on Siemens SIMATIC S7-1500 CPU PLC devices with firmware before 1.5.0 and SIMATIC S7-1200 CPU PLC devices with firmware before 4.0 allows remote attackers to hijack the authentication of unspecified victims via unknown vectors."
-    }
-  ],
-  "OSIsoft:PI Server:2018": [
-    {
-      "id": "CVE-2016-4530",
-      "cvss": 6.5,
-      "severity": "MEDIUM",
-      "known_exploited": false,
-      "description": "OSIsoft PI SQL Data Access Server (aka OLE DB) 2016 1.5 allows remote authenticated users to cause a denial of service (service outage and data loss) via a message."
-    }
-  ],
-  "Inductive Automation:Ignition:8.1": [
-    {
-      "id": "CVE-2022-35890",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "An issue was discovered in Inductive Automation Ignition before 7.9.20 and 8.x before 8.1.17. Designer and Vision Client Session IDs are mishandled. An attacker can determine which session IDs were generated in the past and then hijack sessions assigned to these IDs via Randy."
-    },
-    {
-      "id": "CVE-2022-35869",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "This vulnerability allows remote attackers to bypass authentication on affected installations of Inductive Automation Ignition 8.1.15 (b2022030114). Authentication is not required to exploit this vulnerability. The specific flaw exists within com.inductiveautomation.ignition.gateway.web.pages. The issue results from the lack of proper authentication prior to access to functionality. An attacker can leverage this vulnerability to bypass authentication on the system. Was ZDI-CAN-17211."
-    },
-    {
-      "id": "CVE-2023-39475",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "Inductive Automation Ignition ParameterVersionJavaSerializationCodec Deserialization of Untrusted Data Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of Inductive Automation Ignition. Authentication is not required to exploit this vulnerability.\n\nThe specific flaw exists within the ParameterVersionJavaSerializationCodec class. The issue results from the lack of proper validation of user-supplied data, which can result in deserialization of untrusted data. An attacker can leverage this vulnerability to execute code in the context of SYSTEM. Was ZDI-CAN-20290."
-    },
-    {
-      "id": "CVE-2023-39476",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "Inductive Automation Ignition JavaSerializationCodec Deserialization of Untrusted Data Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of Inductive Automation Ignition. Authentication is not required to exploit this vulnerability.\n\nThe specific flaw exists within the JavaSerializationCodec class. The issue results from the lack of proper validation of user-supplied data, which can result in deserialization of untrusted data. An attacker can leverage this vulnerability to execute code in the context of SYSTEM. Was ZDI-CAN-20291."
-    },
-    {
-      "id": "CVE-2023-38121",
-      "cvss": 9.0,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "Inductive Automation Ignition OPC UA Quick Client Cross-Site Scripting Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of Inductive Automation Ignition. User interaction is required to exploit this vulnerability in that the target must visit a malicious page or open a malicious file.\n\nThe specific flaw exists within the handling of the id parameter provided to the Inductive Automation Ignition web interface. The issue results from the lack of proper validation of user-supplied data, which can lead to the injection of an arbitrary script. An attacker can leverage this vulnerability to execute arbitrary code in the context of SYSTEM. Was ZDI-CAN-20355."
-    },
-    {
-      "id": "CVE-2023-38123",
-      "cvss": 8.8,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "Inductive Automation Ignition OPC UA Quick Client Missing Authentication for Critical Function Authentication Bypass Vulnerability. This vulnerability allows remote attackers to bypass authentication on affected installations of Inductive Automation Ignition. User interaction is required to exploit this vulnerability in that the target must visit a malicious page or open a malicious file.\n\nThe specific flaw exists within the server configuration. The issue results from the lack of authentication prior to allowing access to password change functionality. An attacker can leverage this vulnerability to bypass authentication on the system. Was ZDI-CAN-20540."
-    },
-    {
-      "id": "CVE-2023-38124",
-      "cvss": 8.8,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "Inductive Automation Ignition OPC UA Quick Client Task Scheduling Exposed Dangerous Function Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of Inductive Automation Ignition. Authentication is required to exploit this vulnerability.\n\nThe specific flaw exists within the Ignition Gateway server. The issue results from the exposure of a dangerous function. An attacker can leverage this vulnerability to execute code in the context of SYSTEM. Was ZDI-CAN-20541."
-    },
-    {
-      "id": "CVE-2023-39473",
-      "cvss": 8.8,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "Inductive Automation Ignition AbstractGatewayFunction Deserialization of Untrusted Data Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of Inductive Automation Ignition. Authentication is required to exploit this vulnerability.\n\nThe specific flaw exists within the AbstractGatewayFunction class. The issue results from the lack of proper validation of user-supplied data, which can result in deserialization of untrusted data. An attacker can leverage this vulnerability to execute code in the context of SYSTEM.\n. Was ZDI-CAN-17587."
-    },
-    {
-      "id": "CVE-2023-39474",
-      "cvss": 8.8,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "Inductive Automation Ignition downloadLaunchClientJar Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of Inductive Automation Ignition. User interaction is required to exploit this vulnerability in that the target must connect to a malicious server.\n\nThe specific flaw exists within the downloadLaunchClientJar function. The issue results from the lack of validating a remote JAR file prior to loading it. An attacker can leverage this vulnerability to execute code in the context of the current user.\n. Was ZDI-CAN-19915."
-    },
-    {
-      "id": "CVE-2023-50218",
-      "cvss": 8.8,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "Inductive Automation Ignition ModuleInvoke Deserialization of Untrusted Data Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of Inductive Automation Ignition. Authentication is required to exploit this vulnerability.\n\nThe specific flaw exists within the ModuleInvoke class. The issue results from the lack of proper validation of user-supplied data, which can result in deserialization of untrusted data. An attacker can leverage this vulnerability to execute code in the context of SYSTEM. Was ZDI-CAN-21624."
-    }
-  ],
-  "Rockwell Automation:FactoryTalk View SE:11.0": [
-    {
-      "id": "CVE-2023-2071",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "\nRockwell Automation FactoryTalk View Machine Edition on the PanelView Plus, improperly verifies user\u2019s input, which allows unauthenticated attacker to achieve remote code executed via crafted malicious packets. \u00a0The device has the functionality, through a CIP class, to execute exported functions from libraries. \u00a0There is a routine that restricts it to execute specific functions from two dynamic link library files. \u00a0By using a CIP class, an attacker can upload a self-made library to the device which allows the attacker to bypass the security check and execute any code written in the function.\n\n"
-    },
-    {
-      "id": "CVE-2024-4609",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "A vulnerability exists in the Rockwell Automation FactoryTalk\u00ae View SE Datalog function that could allow a threat actor to inject a malicious SQL statement if the SQL database has no authentication in place or if legitimate credentials were stolen. If exploited, the attack could result in information exposure, revealing sensitive information. Additionally, a threat actor could potentially modify and delete the data in a remote database. An attack would only affect the HMI design time, not runtime."
-    },
-    {
-      "id": "CVE-2024-45824",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "CVE-2024-45824 IMPACT\n\n\n\nA remote\ncode vulnerability exists in the affected products. The vulnerability occurs\nwhen chained with Path Traversal, Command Injection, and XSS Vulnerabilities\nand allows for full unauthenticated remote code execution. The link in the\nmitigations section below contains patches to fix this issue."
-    },
-    {
-      "id": "CVE-2025-9063",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "An authentication bypass security issue exists within FactoryTalk View Machine Edition  Web Browser ActiveX control. Exploitation of this vulnerability allows unauthorized access to the PanelView Plus 7 Series B, including access to the file system, retrieval of diagnostic information, event logs, and more."
-    },
-    {
-      "id": "CVE-2025-9064",
-      "cvss": 9.1,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "A path traversal security issue exists within FactoryTalk View Machine Edition, allowing unauthenticated attackers on the same network as the device to delete any file within the panels operating system. Exploitation of this vulnerability is dependent on the knowledge of filenames to be deleted."
-    },
-    {
-      "id": "CVE-2020-12029",
-      "cvss": 9.0,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "All versions of FactoryTalk View SE do not properly validate input of filenames within a project directory. A remote, unauthenticated attacker may be able to execute a crafted file on a remote endpoint that may result in remote code execution (RCE). Rockwell Automation recommends applying patch 1126289. Before installing this patch, the patch rollup dated 06 Apr 2020 or later MUST be applied. 1066644 \u2013 Patch Roll-up for CPR9 SRx."
-    },
-    {
-      "id": "CVE-2024-37369",
-      "cvss": 8.8,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "A privilege escalation vulnerability exists in the affected product. The vulnerability allows low-privilege users to edit scripts, bypassing Access Control Lists, and potentially gaining further access within the system."
-    },
-    {
-      "id": "CVE-2024-7513",
-      "cvss": 8.8,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "CVE-2024-7513 IMPACT\n\nA code execution vulnerability exists in the affected product. The vulnerability occurs due to improper default file permissions allowing any user to edit or replace files, which are executed by account with elevated permissions."
-    },
-    {
-      "id": "CVE-2020-14481",
-      "cvss": 7.8,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "The DeskLock tool provided with FactoryTalk View SE uses a weak encryption algorithm that may allow a local, authenticated attacker to decipher user credentials, including the Windows user or Windows DeskLock passwords. If the compromised user has an administrative account, an attacker could gain full access to the user\u2019s operating system and certain components of FactoryTalk View SE."
-    },
-    {
-      "id": "CVE-2020-12031",
-      "cvss": 7.5,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "In all versions of FactoryTalk View SE, after bypassing memory corruption mechanisms found in the operating system, a local, authenticated attacker may corrupt the associated memory space allowing for arbitrary code execution. Rockwell Automation recommends applying patch 1126290. Before installing this patch, the patch rollup dated 06 Apr 2020 or later MUST be applied. 1066644 \u2013 Patch Roll-up for CPR9 SRx."
-    }
-  ],
-  "Rockwell Automation:ControlLogix 1756-L61:20.011": [
-    {
-      "id": "CVE-2021-22681",
-      "cvss": 9.8,
-      "severity": "CRITICAL",
-      "known_exploited": true,
-      "description": "Rockwell Automation Studio 5000 Logix Designer Versions 21 and later, and RSLogix 5000 Versions 16 through 20 use a key to verify Logix controllers are communicating with Rockwell Automation CompactLogix 1768, 1769, 5370, 5380, 5480: ControlLogix 5550, 5560, 5570, 5580; DriveLogix 5560, 5730, 1794-L34; Compact GuardLogix 5370, 5380; GuardLogix 5570, 5580; SoftLogix 5800. Rockwell Automation Studio 5000 Logix Designer Versions 21 and later and RSLogix 5000: Versions 16 through 20 are vulnerable because an unauthenticated attacker could bypass this verification mechanism and authenticate with Rockwell Automation CompactLogix 1768, 1769, 5370, 5380, 5480: ControlLogix 5550, 5560, 5570, 5580; DriveLogix 5560, 5730, 1794-L34; Compact GuardLogix 5370, 5380; GuardLogix 5570, 5580; SoftLogix 5800."
-    },
-    {
-      "id": "CVE-2022-1161",
-      "cvss": 10.0,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "An attacker with the ability to modify a user program may change user program code on some ControlLogix, CompactLogix, and GuardLogix Control systems. Studio 5000 Logix Designer writes user-readable program code to a separate location than the executed compiled code, allowing an attacker to change one and not the other."
-    },
-    {
-      "id": "CVE-2024-3493",
-      "cvss": 8.6,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "\nA specific malformed fragmented packet type (fragmented packets may be generated automatically by devices that send large amounts of data) can cause a major nonrecoverable fault (MNRF) Rockwell Automation's ControlLogix 5580, Guard Logix\u00a05580,\u00a0CompactLogix 5380,\u00a0and 1756-EN4TR. If exploited, the affected product will become unavailable and require a manual restart to recover it. Additionally, an MNRF could result in a loss of view and/or control of connected devices. \n\n"
-    },
-    {
-      "id": "CVE-2022-1159",
-      "cvss": 7.7,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "Rockwell Automation Studio 5000 Logix Designer (all versions) are vulnerable when an attacker who achieves administrator access on a workstation running Studio 5000 Logix Designer could inject controller code undetectable to a user."
-    },
-    {
-      "id": "CVE-2024-40619",
-      "cvss": 7.5,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "CVE-2024-40619 IMPACT\n\nA denial-of-service vulnerability exists in the affected products. The vulnerability occurs when a malformed CIP packet is sent over the network to the device and results in a major nonrecoverable fault causing a denial-of-service."
-    },
-    {
-      "id": "CVE-2024-7515",
-      "cvss": 7.5,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "CVE-2024-7515 IMPACT\n\nA denial-of-service vulnerability exists in the affected products. A malformed PTP management packet can cause a major nonrecoverable fault in the controller."
-    },
-    {
-      "id": "CVE-2024-6077",
-      "cvss": 7.5,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "A denial-of-service vulnerability exists in the Rockwell Automation affected products when specially crafted packets are sent to the CIP Security Object. If exploited the device will become unavailable and require a factory reset to recover."
-    },
-    {
-      "id": "CVE-2024-8626",
-      "cvss": 7.5,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "Due to a memory leak, a denial-of-service vulnerability exists in the Rockwell Automation affected products. A malicious actor could exploit this vulnerability by performing multiple actions on certain web pages of the product causing the affected products to become fully unavailable and require a power cycle to recover."
-    },
-    {
-      "id": "CVE-2024-6207",
-      "cvss": 7.5,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "CVE 2021-22681 https://www.rockwellautomation.com/en-us/trust-center/security-advisories/advisory.PN1550.html \u00a0and send a specially crafted CIP message to the device.  If exploited, a threat actor could help prevent access to the legitimate user and end connections to connected devices including the workstation.  To recover the controllers, a download is required which ends any process that the controller is running."
-    },
-    {
-      "id": "CVE-2025-9166",
-      "cvss": 7.5,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "A denial-of-service security issue exists in the affected product and version. The security issue stems from the controller repeatedly attempting to forward messages. The issue could result in a major nonrecoverable fault on the controller."
-    }
-  ],
-  "Rockwell Automation:CompactLogix 5370:30.011": [
-    {
-      "id": "CVE-2016-9343",
-      "cvss": 10.0,
-      "severity": "CRITICAL",
-      "known_exploited": false,
-      "description": "An issue was discovered in Rockwell Automation Logix5000 Programmable Automation Controller FRN 16.00 through 21.00 (excluding all firmware versions prior to FRN 16.00, which are not affected). By sending malformed common industrial protocol (CIP) packet, an attacker may be able to overflow a stack-based buffer and execute code on the controller or initiate a nonrecoverable fault resulting in a denial of service."
-    }
-  ],
-  "GE:D20 RTU:5.0": [
-    {
-      "id": "CVE-2012-6663",
-      "cvss": 7.5,
-      "severity": "HIGH",
-      "known_exploited": false,
-      "description": "General Electric D20ME devices are not properly configured and reveal plaintext passwords."
-    }
-  ]
+  "_meta": {
+    "generated": "2026-06-15",
+    "kev_catalog_version": "2026.06.02",
+    "kev_date_released": "2026-06-02T17:04:13.1193Z",
+    "kev_count": 1610,
+    "nvd_api": "2.0"
+  },
+  "products": {
+    "AVEVA:Historian:2020": [
+      {
+        "id": "CVE-2020-13499",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "unconfirmed",
+        "description": "An SQL injection vulnerability exists in the CHaD.asmx web service functionality of eDNA Enterprise Data Historian 3.0.1.2/7.5.4989.33053. Specially crafted SOAP web requests can cause SQL injections resulting in data compromise. Parameter InstancePath in CHaD.asmx is vulnerable to unauthenticated SQL injection attacks."
+      },
+      {
+        "id": "CVE-2020-13500",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "unconfirmed",
+        "description": "SQL injection vulnerability exists in the CHaD.asmx web service functionality of eDNA Enterprise Data Historian 3.0.1.2/7.5.4989.33053. Specially crafted SOAP web requests can cause SQL injections resulting in data compromise. Parameter ClassName in CHaD.asmx is vulnerable to unauthenticated SQL injection attacks."
+      },
+      {
+        "id": "CVE-2020-13501",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "unconfirmed",
+        "description": "An SQL injection vulnerability exists in the CHaD.asmx web service functionality of eDNA Enterprise Data Historian 3.0.1.2/7.5.4989.33053. Specially crafted SOAP web requests can cause SQL injections resulting in data compromise. Parameter InstanceName in CHaD.asmx is vulnerable to unauthenticated SQL injection attacks."
+      },
+      {
+        "id": "CVE-2020-13504",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "unconfirmed",
+        "description": "Parameter AttFilterValue in ednareporting.asmx is vulnerable to unauthenticated SQL injection attacks. Specially crafted SOAP web requests can cause SQL injections resulting in data compromise. An attacker can send unauthenticated HTTP requests to trigger this vulnerability."
+      },
+      {
+        "id": "CVE-2020-13505",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "unconfirmed",
+        "description": "Parameter psClass in ednareporting.asmx is vulnerable to unauthenticated SQL injection attacks. Specially crafted SOAP web requests can cause SQL injections resulting in data compromise. An attacker can send unauthenticated HTTP requests to trigger this vulnerability."
+      }
+    ],
+    "AVEVA:InTouch:2020": [],
+    "Schneider Electric:Modicon M340:3.20": [
+      {
+        "id": "CVE-2018-7241",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "Hard coded accounts exist in Schneider Electric's Modicon Premium, Modicon Quantum, Modicon M340, and BMXNOR0200 controllers in all versions of the communication modules."
+      },
+      {
+        "id": "CVE-2018-7242",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "Vulnerable hash algorithms exists in Schneider Electric's Modicon Premium, Modicon Quantum, Modicon M340, and BMXNOR0200 controllers in all versions of the communication modules. The algorithm used to encrypt the password is vulnerable to hash collision attacks."
+      },
+      {
+        "id": "CVE-2018-7760",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "An authorization bypass vulnerability exists in Schneider Electric's Modicon M340, Modicon Premium, Modicon Quantum PLC, BMXNOR0200. Requests to CGI functions allow malicious users to bypass authorization."
+      },
+      {
+        "id": "CVE-2018-7761",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "A vulnerability exists in the HTTP request parser in Schneider Electric's Modicon M340, Modicon Premium, Modicon Quantum PLC, BMXNOR0200 which could allow arbitrary code execution."
+      },
+      {
+        "id": "CVE-2020-7540",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "A CWE-306: Missing Authentication for Critical Function vulnerability exists in the Web Server on Modicon M340, Legacy Offers Modicon Quantum and Modicon Premium and associated Communication Modules (see security notification for affected versions), that could cause unauthenticated command execution in the controller when sending special HTTP requests."
+      },
+      {
+        "id": "CVE-2022-37300",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "A CWE-640: Weak Password Recovery Mechanism for Forgotten Password vulnerability exists that could cause unauthorized access in read and write mode to the controller when communicating over Modbus. Affected Products: EcoStruxure Control Expert Including all Unity Pro versions (former name of EcoStruxure Control Expert) (V15.0 SP1 and prior), EcoStruxure Process Expert, Including all versions of EcoStruxure Hybrid DCS (former name of EcoStruxure Process Expert) (V2021 and prior), Modicon M340 CPU (part numbers BMXP34*) (V3.40 and prior), Modicon M580 CPU (part numbers BMEP* and BMEH*) (V3.20 and prior)."
+      },
+      {
+        "id": "CVE-2021-22779",
+        "cvss": 9.1,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "Authentication Bypass by Spoofing vulnerability exists in EcoStruxure Control Expert (all versions prior to V15.0 SP1, including all versions of Unity Pro), EcoStruxure Control Expert V15.0 SP1, EcoStruxure Process Expert (all versions, including all versions of EcoStruxure Hybrid DCS), SCADAPack RemoteConnect for x70 (all versions), Modicon M580 CPU (all versions - part numbers BMEP* and BMEH*), Modicon M340 CPU (all versions - part numbers BMXP34*), that could cause unauthorized access in read and write mode to the controller by spoofing the Modbus communication between the engineering software and the controller."
+      },
+      {
+        "id": "CVE-2022-45789",
+        "cvss": 8.1,
+        "severity": "HIGH",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "A CWE-294: Authentication Bypass by Capture-replay vulnerability exists that could cause execution of unauthorized Modbus functions on the controller when hijacking an authenticated Modbus session. Affected Products: EcoStruxure Control Expert (All Versions), EcoStruxure Process Expert (All Versions), Modicon M340 CPU - part numbers BMXP34* (All Versions), Modicon M580 CPU - part numbers BMEP* and BMEH* (All Versions), Modicon M580 CPU Safety - part numbers BMEP58*S and BMEH58*S (All Versions)\n\n"
+      },
+      {
+        "id": "CVE-2023-6408",
+        "cvss": 8.1,
+        "severity": "HIGH",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "\nCWE-924: Improper Enforcement of Message Integrity During Transmission in a\nCommunication Channel vulnerability exists that could cause a denial of service and loss of\nconfidentiality, integrity of controllers when conducting a Man in the Middle attack.\n\n"
+      },
+      {
+        "id": "CVE-2018-7759",
+        "cvss": 7.5,
+        "severity": "HIGH",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "A buffer overflow vulnerability exists in Schneider Electric's Modicon M340, Modicon Premium, Modicon Quantum PLC, BMXNOR0200. The buffer overflow vulnerability is caused by the length of the source string specified (instead of the buffer size) as the number of bytes to be copied."
+      }
+    ],
+    "Siemens:SIMATIC S7-1500:2.9": [],
+    "OSIsoft:PI Server:2018": [],
+    "Inductive Automation:Ignition:8.1": [
+      {
+        "id": "CVE-2022-35890",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "An issue was discovered in Inductive Automation Ignition before 7.9.20 and 8.x before 8.1.17. Designer and Vision Client Session IDs are mishandled. An attacker can determine which session IDs were generated in the past and then hijack sessions assigned to these IDs via Randy."
+      },
+      {
+        "id": "CVE-2023-39475",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "Inductive Automation Ignition ParameterVersionJavaSerializationCodec Deserialization of Untrusted Data Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of Inductive Automation Ignition. Authentication is not required to exploit this vulnerability.\n\nThe specific flaw exists within the ParameterVersionJavaSerializationCodec class. The issue results from the lack of proper validation of user-supplied data, which can result in deserialization of untrusted data. An attacker can leverage this vulnerability to execute code in the context of SYSTEM. Was ZDI-CAN-20290."
+      },
+      {
+        "id": "CVE-2023-39476",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "Inductive Automation Ignition JavaSerializationCodec Deserialization of Untrusted Data Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of Inductive Automation Ignition. Authentication is not required to exploit this vulnerability.\n\nThe specific flaw exists within the JavaSerializationCodec class. The issue results from the lack of proper validation of user-supplied data, which can result in deserialization of untrusted data. An attacker can leverage this vulnerability to execute code in the context of SYSTEM. Was ZDI-CAN-20291."
+      },
+      {
+        "id": "CVE-2023-38121",
+        "cvss": 9.0,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "Inductive Automation Ignition OPC UA Quick Client Cross-Site Scripting Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of Inductive Automation Ignition. User interaction is required to exploit this vulnerability in that the target must visit a malicious page or open a malicious file.\n\nThe specific flaw exists within the handling of the id parameter provided to the Inductive Automation Ignition web interface. The issue results from the lack of proper validation of user-supplied data, which can lead to the injection of an arbitrary script. An attacker can leverage this vulnerability to execute arbitrary code in the context of SYSTEM. Was ZDI-CAN-20355."
+      },
+      {
+        "id": "CVE-2023-38123",
+        "cvss": 8.8,
+        "severity": "HIGH",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "Inductive Automation Ignition OPC UA Quick Client Missing Authentication for Critical Function Authentication Bypass Vulnerability. This vulnerability allows remote attackers to bypass authentication on affected installations of Inductive Automation Ignition. User interaction is required to exploit this vulnerability in that the target must visit a malicious page or open a malicious file.\n\nThe specific flaw exists within the server configuration. The issue results from the lack of authentication prior to allowing access to password change functionality. An attacker can leverage this vulnerability to bypass authentication on the system. Was ZDI-CAN-20540."
+      },
+      {
+        "id": "CVE-2023-38124",
+        "cvss": 8.8,
+        "severity": "HIGH",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "Inductive Automation Ignition OPC UA Quick Client Task Scheduling Exposed Dangerous Function Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of Inductive Automation Ignition. Authentication is required to exploit this vulnerability.\n\nThe specific flaw exists within the Ignition Gateway server. The issue results from the exposure of a dangerous function. An attacker can leverage this vulnerability to execute code in the context of SYSTEM. Was ZDI-CAN-20541."
+      },
+      {
+        "id": "CVE-2023-39473",
+        "cvss": 8.8,
+        "severity": "HIGH",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "Inductive Automation Ignition AbstractGatewayFunction Deserialization of Untrusted Data Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of Inductive Automation Ignition. Authentication is required to exploit this vulnerability.\n\nThe specific flaw exists within the AbstractGatewayFunction class. The issue results from the lack of proper validation of user-supplied data, which can result in deserialization of untrusted data. An attacker can leverage this vulnerability to execute code in the context of SYSTEM.\n. Was ZDI-CAN-17587."
+      },
+      {
+        "id": "CVE-2023-39474",
+        "cvss": 8.8,
+        "severity": "HIGH",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "Inductive Automation Ignition downloadLaunchClientJar Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of Inductive Automation Ignition. User interaction is required to exploit this vulnerability in that the target must connect to a malicious server.\n\nThe specific flaw exists within the downloadLaunchClientJar function. The issue results from the lack of validating a remote JAR file prior to loading it. An attacker can leverage this vulnerability to execute code in the context of the current user.\n. Was ZDI-CAN-19915."
+      },
+      {
+        "id": "CVE-2023-50218",
+        "cvss": 8.8,
+        "severity": "HIGH",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "Inductive Automation Ignition ModuleInvoke Deserialization of Untrusted Data Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of Inductive Automation Ignition. Authentication is required to exploit this vulnerability.\n\nThe specific flaw exists within the ModuleInvoke class. The issue results from the lack of proper validation of user-supplied data, which can result in deserialization of untrusted data. An attacker can leverage this vulnerability to execute code in the context of SYSTEM. Was ZDI-CAN-21624."
+      },
+      {
+        "id": "CVE-2023-50219",
+        "cvss": 8.8,
+        "severity": "HIGH",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "Inductive Automation Ignition RunQuery Deserialization of Untrusted Data Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of Inductive Automation Ignition. Authentication is required to exploit this vulnerability.\n\nThe specific flaw exists within the RunQuery class. The issue results from the lack of proper validation of user-supplied data, which can result in deserialization of untrusted data. An attacker can leverage this vulnerability to execute code in the context of SYSTEM. Was ZDI-CAN-21625."
+      }
+    ],
+    "Rockwell Automation:FactoryTalk View SE:11.0": [
+      {
+        "id": "CVE-2023-2071",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "\nRockwell Automation FactoryTalk View Machine Edition on the PanelView Plus, improperly verifies user\u2019s input, which allows unauthenticated attacker to achieve remote code executed via crafted malicious packets. \u00a0The device has the functionality, through a CIP class, to execute exported functions from libraries. \u00a0There is a routine that restricts it to execute specific functions from two dynamic link library files. \u00a0By using a CIP class, an attacker can upload a self-made library to the device which allows the attacker to bypass the security check and execute any code written in the function.\n\n"
+      },
+      {
+        "id": "CVE-2025-9063",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "An authentication bypass security issue exists within FactoryTalk View Machine Edition  Web Browser ActiveX control. Exploitation of this vulnerability allows unauthorized access to the PanelView Plus 7 Series B, including access to the file system, retrieval of diagnostic information, event logs, and more."
+      },
+      {
+        "id": "CVE-2025-9064",
+        "cvss": 9.1,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "A path traversal security issue exists within FactoryTalk View Machine Edition, allowing unauthenticated attackers on the same network as the device to delete any file within the panels operating system. Exploitation of this vulnerability is dependent on the knowledge of filenames to be deleted."
+      },
+      {
+        "id": "CVE-2020-12029",
+        "cvss": 9.0,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "All versions of FactoryTalk View SE do not properly validate input of filenames within a project directory. A remote, unauthenticated attacker may be able to execute a crafted file on a remote endpoint that may result in remote code execution (RCE). Rockwell Automation recommends applying patch 1126289. Before installing this patch, the patch rollup dated 06 Apr 2020 or later MUST be applied. 1066644 \u2013 Patch Roll-up for CPR9 SRx."
+      },
+      {
+        "id": "CVE-2020-12031",
+        "cvss": 7.5,
+        "severity": "HIGH",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "In all versions of FactoryTalk View SE, after bypassing memory corruption mechanisms found in the operating system, a local, authenticated attacker may corrupt the associated memory space allowing for arbitrary code execution. Rockwell Automation recommends applying patch 1126290. Before installing this patch, the patch rollup dated 06 Apr 2020 or later MUST be applied. 1066644 \u2013 Patch Roll-up for CPR9 SRx."
+      },
+      {
+        "id": "CVE-2023-46289",
+        "cvss": 7.5,
+        "severity": "HIGH",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "\nRockwell Automation FactoryTalk View Site Edition insufficiently validates user input, which could potentially allow threat actors to send malicious data bringing the product offline. If exploited, the product would become unavailable and require a restart to recover resulting in a denial-of-service condition.\n\n"
+      },
+      {
+        "id": "CVE-2024-37368",
+        "cvss": 7.5,
+        "severity": "HIGH",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "A user authentication vulnerability exists in the Rockwell Automation\u00a0FactoryTalk\u00ae View SE. The vulnerability allows a user from a remote system with FTView to send a packet to the customer\u2019s server to view an HMI project. Due to the lack of proper authentication, this action is allowed without proper authentication verification."
+      },
+      {
+        "id": "CVE-2020-12028",
+        "cvss": 7.3,
+        "severity": "HIGH",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "In all versions of FactoryTalk View SEA remote, an authenticated attacker may be able to utilize certain handlers to interact with the data on the remote endpoint since those handlers do not enforce appropriate permissions. Rockwell Automation recommends enabling built in security features found within FactoryTalk View SE. Users should follow guidance found in knowledge base articles 109056 and 1126943 to set up IPSec and/or HTTPs."
+      },
+      {
+        "id": "CVE-2024-21914",
+        "cvss": 5.3,
+        "severity": "MEDIUM",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "\nA vulnerability exists in the affected product that allows a malicious user to restart the Rockwell Automation PanelView\u2122 Plus 7 terminal remotely without security protections. If the vulnerability is exploited, it could lead to the loss of view or control of the PanelView\u2122 product.\n\n"
+      },
+      {
+        "id": "CVE-2020-12027",
+        "cvss": 4.3,
+        "severity": "MEDIUM",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "All versions of FactoryTalk View SE disclose the hostnames and file paths for certain files within the system. A remote, authenticated attacker may be able to leverage this information for reconnaissance efforts. Rockwell Automation recommends enabling built in security features found within FactoryTalk View SE. Users should follow guidance found in knowledge base articles 109056 and 1126943 to set up IPSec and/or HTTPs."
+      }
+    ],
+    "Rockwell Automation:ControlLogix 1756-L61:20.011": [
+      {
+        "id": "CVE-2021-22681",
+        "cvss": 9.8,
+        "severity": "CRITICAL",
+        "known_exploited": true,
+        "version_status": "unconfirmed",
+        "description": "Rockwell Automation Studio 5000 Logix Designer Versions 21 and later, and RSLogix 5000 Versions 16 through 20 use a key to verify Logix controllers are communicating with Rockwell Automation CompactLogix 1768, 1769, 5370, 5380, 5480: ControlLogix 5550, 5560, 5570, 5580; DriveLogix 5560, 5730, 1794-L34; Compact GuardLogix 5370, 5380; GuardLogix 5570, 5580; SoftLogix 5800. Rockwell Automation Studio 5000 Logix Designer Versions 21 and later and RSLogix 5000: Versions 16 through 20 are vulnerable because an unauthenticated attacker could bypass this verification mechanism and authenticate with Rockwell Automation CompactLogix 1768, 1769, 5370, 5380, 5480: ControlLogix 5550, 5560, 5570, 5580; DriveLogix 5560, 5730, 1794-L34; Compact GuardLogix 5370, 5380; GuardLogix 5570, 5580; SoftLogix 5800."
+      },
+      {
+        "id": "CVE-2022-1161",
+        "cvss": 10.0,
+        "severity": "CRITICAL",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "An attacker with the ability to modify a user program may change user program code on some ControlLogix, CompactLogix, and GuardLogix Control systems. Studio 5000 Logix Designer writes user-readable program code to a separate location than the executed compiled code, allowing an attacker to change one and not the other."
+      },
+      {
+        "id": "CVE-2022-1159",
+        "cvss": 7.7,
+        "severity": "HIGH",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "Rockwell Automation Studio 5000 Logix Designer (all versions) are vulnerable when an attacker who achieves administrator access on a workstation running Studio 5000 Logix Designer could inject controller code undetectable to a user."
+      },
+      {
+        "id": "CVE-2022-1797",
+        "cvss": 6.8,
+        "severity": "MEDIUM",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "A malformed Class 3 common industrial protocol message with a cached connection can cause a denial-of-service condition in Rockwell Automation Logix Controllers, resulting in a major nonrecoverable fault. If the target device becomes unavailable, a user would have to clear the fault and redownload the user project file to bring the device back online."
+      },
+      {
+        "id": "CVE-2017-6024",
+        "cvss": 5.9,
+        "severity": "MEDIUM",
+        "known_exploited": false,
+        "version_status": "unconfirmed",
+        "description": "A Resource Exhaustion issue was discovered in Rockwell Automation ControlLogix 5580 controllers V28.011, V28.012, and V28.013; ControlLogix 5580 controllers V29.011; CompactLogix 5380 controllers V28.011; and CompactLogix 5380 controllers V29.011. This vulnerability may allow an attacker to cause a denial of service condition by sending a series of specific CIP-based commands to the controller."
+      }
+    ],
+    "Rockwell Automation:CompactLogix 5370:30.011": [],
+    "GE:D20 RTU:5.0": [
+      {
+        "id": "CVE-2012-6663",
+        "cvss": 7.5,
+        "severity": "HIGH",
+        "known_exploited": false,
+        "version_status": "confirmed",
+        "description": "General Electric D20ME devices are not properly configured and reveal plaintext passwords."
+      }
+    ]
+  }
 }

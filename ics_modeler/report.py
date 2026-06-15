@@ -20,7 +20,7 @@ _LEVEL_ORDER = [  # process -> internet, for inventory grouping
 # Briefing
 # --------------------------------------------------------------------------- #
 def generate_briefing(architecture, mapped, scores, paths, chokepoints_, campaign_matches,
-                      violations=None, mitigations=None,
+                      violations=None, mitigations=None, provenance=None,
                       dest: str = "results/briefing.md") -> str:
     """Render the vulnerability briefing to `dest`; also returns the markdown."""
     assets = architecture.assets
@@ -120,6 +120,10 @@ def generate_briefing(architecture, mapped, scores, paths, chokepoints_, campaig
 
     # CVE summary -----------------------------------------------------------
     L.append("## Known-CVE summary\n")
+    L.append("_Matched by CPE and filtered to the asset's version where determinable; "
+             "entries marked *(version not confirmed)* are product-level matches that may not "
+             "apply to the specific firmware/version. Assets with a KEV (actively-exploited) CVE "
+             "have their risk band escalated +1 (CISA BOD 22-01)._\n")
     any_cve = False
     for n, _ in ranked:
         cves = mapped.get(n, {}).get("cves", [])
@@ -129,7 +133,8 @@ def generate_briefing(architecture, mapped, scores, paths, chokepoints_, campaig
         L.append(f"**{n}**")
         for c in sorted(cves, key=lambda c: -(c.get("cvss") or 0))[:5]:
             kev = " — **KEV (actively exploited)**" if c.get("known_exploited") else ""
-            L.append(f"- {c['id']} — CVSS {c.get('cvss')} ({c.get('severity')}){kev}")
+            ver = "" if c.get("version_status") == "confirmed" else " _(version not confirmed)_"
+            L.append(f"- {c['id']} — CVSS {c.get('cvss')} ({c.get('severity')}){kev}{ver}")
         L.append("")
     if not any_cve:
         L.append("_No CVEs attached — run the pipeline with CVE enrichment "
@@ -194,11 +199,18 @@ def generate_briefing(architecture, mapped, scores, paths, chokepoints_, campaig
              "from the standard; the factor weights are engineering judgment, validated "
              "robust to ±20% perturbation for the *priority ranking* but not for "
              "fine-grained ordering among same-band assets (see `data/risk_rubric.md`).")
-    L.append("- **CVEs match by product, point-in-time.** Matched by CPE vendor/product "
-             "across versions (not pinned to exact firmware); KEV membership and CVE lists "
-             "drift, so the snapshot should be refreshed.")
+    L.append("- **CVEs are point-in-time.** Matched by CPE and version-filtered where "
+             "determinable, but KEV membership and CVE lists drift; refresh the snapshot.")
     L.append("- **Trend matches mean shared techniques**, not vulnerability to the specific "
              "malware. Technique mapping is rule-based and not exhaustive of ATT&CK for ICS.\n")
+
+    # Provenance ------------------------------------------------------------
+    if provenance:
+        L.append("---\n")
+        L.append(f"_Data provenance: ATT&CK for ICS — {provenance.get('attack', '?')}; "
+                 f"CISA KEV {provenance.get('kev_date', '?')} "
+                 f"({provenance.get('kev_count', '?')} CVEs); "
+                 f"CVE snapshot generated {provenance.get('snapshot_generated', '?')}._")
 
     text = "\n".join(L)
     Path(dest).parent.mkdir(parents=True, exist_ok=True)

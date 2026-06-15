@@ -53,10 +53,10 @@ def test_score_values_are_pinned():
     # hand-computed from the documented weights/decay; guards against silent drift.
     arch = _line_graph()
     g = arch.graph()
-    # likelihood = 0.4*exposure + 0.3*auth(=100, all unauth) + 0.3*0 ; exposure = 100*0.7^d
-    assert score_likelihood(arch.assets["entry"], g, ["entry"]) == 70.0   # d=0 -> 100
-    assert score_likelihood(arch.assets["mid"], g, ["entry"]) == 58.0     # d=1 -> 70
-    assert score_likelihood(arch.assets["target"], g, ["entry"]) == 49.6  # d=2 -> 49
+    # likelihood = 0.6*exposure + 0.4*auth(=100, all unauth) ; exposure = 100*0.7^d
+    assert score_likelihood(arch.assets["entry"], g, ["entry"]) == 100.0  # d=0 -> 100
+    assert score_likelihood(arch.assets["mid"], g, ["entry"]) == 82.0     # d=1 -> 70
+    assert score_likelihood(arch.assets["target"], g, ["entry"]) == 69.4  # d=2 -> 49
     # impact = 0.6*criticality + 0.4*blast_radius
     assert score_impact(arch.assets["entry"], g) == 52.0    # crit 20, blast 100
     assert score_impact(arch.assets["mid"], g) == 56.0      # crit 60, blast 50
@@ -119,16 +119,18 @@ def test_target_plc_has_high_impact():
     assert score_impact(plc, g) > score_impact(workstation, g)
 
 
-def test_known_exploited_cve_raises_likelihood():
+def test_kev_escalates_risk_band():
+    # a KEV (actively-exploited) CVE bumps the asset's risk band up one level.
     arch = load_architecture(ARCH_PATH)
-    g = arch.graph()
-    plc = arch.assets["wayside_plc"]
-    base = score_likelihood(plc, g, arch.entry_nodes, cves=None)
-    kev = score_likelihood(
-        plc, g, arch.entry_nodes,
-        cves=[{"id": "CVE-x", "cvss": 9.8, "known_exploited": True}],
-    )
-    assert kev > base
+    target = "wayside_plc"
+    base = score_architecture(arch, cves_by_asset={})[target]
+    esc = score_architecture(
+        arch, cves_by_asset={target: [{"id": "CVE-x", "known_exploited": True}]}
+    )[target]
+    assert esc["kev_escalated"] is True
+    assert esc["severity"] >= base["severity"]
+    if base["severity"] < 4:
+        assert esc["severity"] == base["severity"] + 1
 
 
 @pytest.mark.parametrize("arch_path", [ARCH_PATH, WATER_PATH])
@@ -138,10 +140,12 @@ def test_scoring_ranking_is_robust_to_weight_perturbation(arch_path):
     r = sensitivity(arch, perturb=0.2, top_n=3)
     # the single highest-priority asset is invariant under +/-20% weight perturbation
     assert r["top1_stable_fraction"] == 1.0
-    # bands rarely move
-    assert r["band_stable_fraction"] >= 0.9
+    # the top-3 priority set is robust (the decision-relevant output)
+    assert r["top_n_set_stable_fraction"] >= 0.8
     # churn is confined to a few near-tied assets, not wild reordering
     assert len(r["top_n_contenders"]) <= r["top_n"] + 2
+    # per-asset bands are more weight-sensitive with the 2-factor likelihood, but bounded
+    assert r["band_stable_fraction"] >= 0.7
 
 
 def test_path_findings_reach_targets_shortest_first():

@@ -69,6 +69,15 @@ def build(arch_path="data/reference_architecture.yaml",
     violations = segmentation_violations(arch)
     campaigns = map_campaigns_to_exposure(mapped, load_campaigns(trends_path))
 
+    from .data_sources import attack_provenance, load_cve_snapshot_meta
+    meta = load_cve_snapshot_meta()
+    provenance = {
+        "attack": attack_provenance(attack_path),
+        "kev_date": str(meta.get("kev_date_released", "?"))[:10],
+        "kev_count": meta.get("kev_count", "?"),
+        "snapshot_generated": meta.get("generated", "?"),
+    }
+
     figdir = f"{out_dir}/figures"
     plot_network(graph, scores, f"{figdir}/network.png")
     plot_exposure_heatmap(mapped, f"{figdir}/heatmap.png")
@@ -76,7 +85,7 @@ def build(arch_path="data/reference_architecture.yaml",
     write_navigator_layer(arch, mapped, f"{out_dir}/attack_navigator_layer.json")
 
     return generate_briefing(arch, mapped, scores, paths, chokes, campaigns, violations,
-                             mitigations, f"{out_dir}/briefing.md")
+                             mitigations, provenance, f"{out_dir}/briefing.md")
 
 
 def main(argv=None) -> None:

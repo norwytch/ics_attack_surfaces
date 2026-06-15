@@ -100,10 +100,12 @@ A validity experiment ([experiments/RESULTS.md](experiments/RESULTS.md), reprodu
 `python -m experiments.validity`) ablates the scoring factors and compares the ranking
 against a trivial Purdue-criticality baseline and independent lenses (Kendall's τ-b).
 Honest headline: the priority ranking is **largely driven by process criticality**
-(τ-b ≈ 0.7 vs. the baseline, identical top-3); **authentication** is the likelihood factor
-that most changes the order, the **KEV/CVE signal is sparse and nearly inert for ranking**,
-authentication is the likelihood factor that most changes the order, and the KEV/CVE signal
-is sparse and nearly inert for ranking.
+(τ-b ≈ 0.7 vs. the baseline, identical top-3), and **authentication** is the likelihood factor
+that most changes the order. A follow-up
+([experiments/ABLATION_FOLLOWUP.md](experiments/ABLATION_FOLLOWUP.md)) **acted** on two
+findings: the CVE/KEV signal was inert as a weighted factor, so it was re-applied as a **band
+escalator** (actively-exploited → +1 band); and segmentation excludes no paths on the
+reference plants — its real value is **bypass detection**, not path filtering.
 
 A second experiment ([experiments/CRITERION_RESULTS.md](experiments/CRITERION_RESULTS.md),
 `python -m experiments.criterion_validity`) runs the **unchanged** tool on a reconstruction
@@ -112,6 +114,26 @@ of the **2015 Ukraine power-grid attack** and checks it against the documented i
 **recovers 100% of the documented attack-path waypoints in order**, and assigns the
 documented OT techniques — with honest caveats (n=1, reconstruction-based, and the IT-stage /
 firmware / wiper techniques are out of the tool's modeled scope).
+
+## Related work and contribution
+
+Attack-path analysis on infrastructure graphs is well-established: logic-based attack-graph
+generation (MulVAL, Ou et al. 2005), topological vulnerability analysis (Jajodia & Noel),
+Bayesian/probabilistic attack graphs, and CVSS environmental scoring all predate this by
+years; commercial ICS platforms (Dragos, Claroty, Nozomi) do live passive discovery and risk
+scoring on real networks. The graph algorithms used here — k-shortest paths, betweenness — are
+textbook, and the risk model is NIST SP 800-30.
+
+**The contribution is integration, not algorithms.** This project wires ATT&CK for ICS
+technique mapping, IEC 62443 zones/conduits, NIST 800-30 scoring, CPE/KEV CVE enrichment, and
+segmentation-aware reachability into one reproducible, auditable pipeline that emits a
+decision-ready briefing and an ATT&CK Navigator layer from a plain-text architecture model. It
+is deliberately **model-based** (no live network), **data-driven** (rules, architectures, and
+trends are inspectable YAML), and **self-evaluated** (see Validation) — which is where it
+differs from the academic attack-graph tools (heavier, network-config-driven) and the
+commercial platforms (closed, live-discovery, not publicly auditable). The honest claim is *a
+transparent ICS attack-surface modeler integrating current public frameworks*, not a novel
+analysis method.
 
 ## Pipeline
 

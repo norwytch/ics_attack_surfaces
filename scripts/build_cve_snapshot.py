@@ -11,6 +11,7 @@ Run manually to refresh:  python -m scripts.build_cve_snapshot
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 from ics_modeler.assets import load_architecture
@@ -22,8 +23,9 @@ DEST = "data/cve_snapshot.json"
 
 def main():
     kev = fetch_kev_catalog()
+    kev_meta = json.loads(Path("data/cache/kev.json").read_text(encoding="utf-8"))
     print(f"KEV catalog: {len(kev)} CVE IDs")
-    snapshot, seen = {}, set()
+    products, seen = {}, set()
     for path in ARCHES:
         for asset in load_architecture(path).assets.values():
             hint = asset.cpe_hint()
@@ -31,11 +33,21 @@ def main():
                 continue
             seen.add(hint)
             cves = lookup_cves_by_cpe(hint, kev=kev)
-            snapshot[hint] = cves
+            products[hint] = cves
             kev_n = sum(c["known_exploited"] for c in cves)
             print(f"  {hint:48} {len(cves):2} CVEs  ({kev_n} in KEV)")
+    snapshot = {
+        "_meta": {
+            "generated": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            "kev_catalog_version": kev_meta.get("catalogVersion", "?"),
+            "kev_date_released": kev_meta.get("dateReleased", "?"),
+            "kev_count": len(kev),
+            "nvd_api": "2.0",
+        },
+        "products": products,
+    }
     Path(DEST).write_text(json.dumps(snapshot, indent=2), encoding="utf-8")
-    print(f"Wrote {DEST} ({len(snapshot)} products)")
+    print(f"Wrote {DEST} ({len(products)} products)")
 
 
 if __name__ == "__main__":

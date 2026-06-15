@@ -266,9 +266,39 @@ recovers 100% of the documented waypoints in order, and assigns all mappable doc
 techniques. Honestly scoped: reconstruction-based (not blind), n=1, and IT-stage / firmware /
 wiper techniques are out of the tool's OT-exposure scope.
 
-**Still open.** Realistic-scale architectures, version-aware CVE matching, and a *blind*
-criterion test (architecture authored by someone other than the tool author) — genuine gaps,
-deliberately surfaced rather than hidden.
+### 16. Version-aware CVE matching + provenance stamps — DONE
+**Why.** CVEs were matched at product level (version dropped), so old CVEs got attached to
+patched/newer assets — false precision; and briefings carried no data provenance.
+**What was done.** `lookup_cves_by_cpe` now checks each CVE's NVD version ranges against the
+asset's version: confirmed-not-affected CVEs are dropped, the rest carry a `version_status`
+(`confirmed` / `unconfirmed`) shown in the briefing as *(version not confirmed)*. The snapshot
+gained a `_meta` block (generation date, KEV catalog date/count), and every briefing ends with
+a provenance line (ATT&CK source + fetch date, KEV date/count, snapshot date). Effect: e.g.
+old AVEVA InTouch and S7-1500 CVEs that don't apply to the modeled versions are now dropped.
+
+### 18. Ablation follow-ups: act on the inert factor + ablate segmentation — DONE
+**Why.** The validity ablation left two threads: it never ablated segmentation, and it found
+the CVE/KEV factor inert without acting on it.
+**What was done.** `experiments/ablation_followup.py` (+ `ABLATION_FOLLOWUP.md`) measured both.
+(a) **Segmentation** excludes **0** attack paths on either reference plant — its real
+contribution is bypass detection, not path filtering (the exclusion capability is genuine and
+unit-tested but doesn't fire here). (b) The **KEV factor** changed no band/rank even for the
+asset that carried a KEV CVE, so it was **removed as a likelihood weight and re-applied as a
+band escalator** (actively-exploited → +1 band, CISA BOD 22-01) — now decision-relevant
+(water's `dosing_plc` goes High → Very High). Sensitivity was re-checked honestly: priority
+ranking stays robust (top-1 100%, top-3 89%), per-asset bands are more weight-sensitive (~75%)
+since the removed factor was an inert variance-dampener. Rubric, README, and tests updated.
+
+### 17. Prior-art positioning — DONE
+**Why.** The repo reinvented attack-graph analysis without saying so; a reviewer's first
+question is "what's new vs. MulVAL et al.?"
+**What was done.** Added a "Related work and contribution" section to the README positioning
+against the attack-graph literature and commercial ICS platforms, with the honest claim: the
+contribution is **integration** (ATT&CK-ICS + 62443 + 800-30 + CVE/KEV + segmentation +
+briefing/Navigator export), not a novel algorithm.
+
+**Still open.** Realistic-scale architectures and a *blind* criterion test (architecture
+authored by someone other than the tool author) — genuine gaps, deliberately surfaced.
 
 ---
 

@@ -117,7 +117,13 @@ def chokepoints(graph) -> dict:
 
 # Factor weights (sum to 1.0 within each dimension) and the per-Purdue-level
 # process-criticality scale. Keep in sync with data/risk_rubric.md.
-LIKELIHOOD_WEIGHTS = {"exposure": 0.4, "auth": 0.3, "known_exploited": 0.3}
+#
+# Note: a former third likelihood factor (known-exploited / CVSS) was removed after an
+# ablation (experiments/ablation_followup.py) showed it changed no asset's band or rank,
+# even for the asset that carried a KEV CVE. The actively-exploited signal is now applied
+# as a band escalator in score_architecture (see KEV escalator), where it is decision-
+# relevant, rather than as a weighted input that washed out.
+LIKELIHOOD_WEIGHTS = {"exposure": 0.6, "auth": 0.4}
 IMPACT_WEIGHTS = {"criticality": 0.6, "blast_radius": 0.4}
 CRITICALITY_BY_LEVEL = {
     "L0_PROCESS": 100, "L1_CONTROL": 100, "L2_SUPERVISORY": 60,
@@ -138,14 +144,9 @@ def _exposure(graph, entry_nodes, name) -> float:
     return 100.0 * (_EXPOSURE_DECAY ** min(dists)) if dists else 0.0
 
 
-def _vuln_factor(cves) -> float:
-    """100 if any attached CVE is in CISA KEV, else scaled by the worst CVSS, else 0."""
-    if not cves:
-        return 0.0
-    if any(c.get("known_exploited") for c in cves):
-        return 100.0
-    scores = [c["cvss"] for c in cves if c.get("cvss") is not None]
-    return min(100.0, max(scores) * 10) if scores else 0.0
+def _has_kev(cves) -> bool:
+    """True if any attached CVE is in the CISA KEV catalog (actively exploited)."""
+    return any(c.get("known_exploited") for c in (cves or []))
 
 
 def _downstream(graph, name) -> set:
@@ -167,13 +168,12 @@ def _downstream(graph, name) -> set:
     return seen
 
 
-def score_likelihood(asset, graph, entry_nodes, cves=None, weights=None) -> float:
-    """0-100 likelihood per the 800-30 rubric (exposure, auth, known-exploited)."""
+def score_likelihood(asset, graph, entry_nodes, weights=None) -> float:
+    """0-100 likelihood per the 800-30 rubric (exposure, protocol authentication)."""
     weights = weights or LIKELIHOOD_WEIGHTS
     factors = {
         "exposure": _exposure(graph, entry_nodes, asset.name),
         "auth": 100.0 if not asset.authenticated else 20.0,
-        "known_exploited": _vuln_factor(cves),
     }
     return round(sum(factors[k] * weights[k] for k in weights), 1)
 
@@ -190,29 +190,32 @@ def score_impact(asset, graph, weights=None) -> float:
 
 
 def score_architecture(architecture, graph=None, cves_by_asset=None,
-                       likelihood_weights=None, impact_weights=None) -> dict:
-    """Per-asset {likelihood, impact, band, severity} — the report's scoring input.
+                       likelihood_weights=None, impact_weights=None,
+                       kev_escalate=True) -> dict:
+    """Per-asset {likelihood, impact, band, severity, kev_escalated} — the report's input.
 
-    The risk band comes from the NIST 800-30 Table I-2 lookup (risk_band); severity
-    is its 0-4 ordinal, used for ranking. Likelihood and impact remain the 0-100 axes
-    for the risk-matrix scatter. Weights are injectable so `sensitivity()` can perturb
-    them; both default to the documented constants.
+    The risk band comes from the NIST 800-30 Table I-2 lookup, then a **KEV escalator**:
+    an asset carrying an actively-exploited (CISA KEV) CVE has its band bumped up one level
+    (capped at Very High), reflecting CISA BOD 22-01's must-patch posture. Weights are
+    injectable so `sensitivity()` can perturb them; `kev_escalate=False` disables the bump.
     """
     graph = graph if graph is not None else architecture.graph()
     cves_by_asset = cves_by_asset or {}
     out = {}
     for name, asset in architecture.assets.items():
-        likelihood = score_likelihood(
-            asset, graph, architecture.entry_nodes, cves_by_asset.get(name),
-            weights=likelihood_weights,
-        )
+        likelihood = score_likelihood(asset, graph, architecture.entry_nodes,
+                                      weights=likelihood_weights)
         impact = score_impact(asset, graph, weights=impact_weights)
         severity = risk_severity(likelihood, impact)
+        escalated = kev_escalate and _has_kev(cves_by_asset.get(name))
+        if escalated:
+            severity = min(4, severity + 1)
         out[name] = {
             "likelihood": likelihood,
             "impact": impact,
             "band": BAND_ORDER[severity],
             "severity": severity,
+            "kev_escalated": escalated,
         }
     return out
 

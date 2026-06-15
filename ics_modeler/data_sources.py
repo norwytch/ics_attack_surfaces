@@ -192,6 +192,66 @@ def resolve_cpe_base(keyword: str, cache_dir: str = CACHE_DIR,
     return None
 
 
+def _vparts(v) -> list[int] | None:
+    parts = []
+    for p in str(v).replace("-", ".").split("."):
+        if not p.isdigit():
+            return None
+        parts.append(int(p))
+    return parts or None
+
+
+def _vcmp(a, b) -> int | None:
+    """Compare dotted-numeric versions: -1/0/1, or None if either is unparseable."""
+    pa, pb = _vparts(a), _vparts(b)
+    if pa is None or pb is None:
+        return None
+    n = max(len(pa), len(pb))
+    pa, pb = pa + [0] * (n - len(pa)), pb + [0] * (n - len(pb))
+    return (pa > pb) - (pa < pb)
+
+
+def _match_affects(asset_version: str, m: dict) -> bool | None:
+    """Does an NVD cpeMatch include asset_version? True / False / None (undeterminable)."""
+    bounds = {"versionStartIncluding": ">=", "versionStartExcluding": ">",
+              "versionEndIncluding": "<=", "versionEndExcluding": "<"}
+    present = {k: m[k] for k in bounds if k in m}
+    if not present:
+        crit_version = (m.get("criteria", "").split(":") + [""] * 6)[5]
+        if crit_version in ("*", "-", ""):
+            return True  # applies to all versions
+        c = _vcmp(asset_version, crit_version)
+        return None if c is None else c == 0
+    inside = True
+    for key, op in bounds.items():
+        if key not in present:
+            continue
+        c = _vcmp(asset_version, present[key])
+        if c is None:
+            return None
+        inside &= {">=": c >= 0, ">": c > 0, "<=": c <= 0, "<": c < 0}[op]
+    return inside
+
+
+def _version_status(asset_version: str, cve: dict, base: str) -> str:
+    """`confirmed` / `not-affected` / `unconfirmed` for asset_version vs a CVE's CPE config."""
+    if not asset_version:
+        return "unconfirmed"
+    vendor_product = ":".join(base.split(":")[3:5])
+    results = [
+        _match_affects(asset_version, m)
+        for conf in cve.get("configurations", [])
+        for node in conf.get("nodes", [])
+        for m in node.get("cpeMatch", [])
+        if m.get("vulnerable") and vendor_product in m.get("criteria", "")
+    ]
+    if any(r is True for r in results):
+        return "confirmed"
+    if results and all(r is False for r in results):
+        return "not-affected"
+    return "unconfirmed"
+
+
 def lookup_cves_by_cpe(
     cpe_hint: str | None,
     kev: set[str] | None = None,
@@ -202,9 +262,10 @@ def lookup_cves_by_cpe(
     """Return the worst CVEs affecting a product, matched by CPE. [] if cpe_hint is None.
 
     Resolves the asset's vendor+product to a CPE base via the NVD CPE dictionary, then
-    queries CVEs by `virtualMatchString` on that base (precise vendor/product match, all
-    versions). Results are cached and sorted by CVSS; the top `limit` are returned with
-    CISA-KEV flags.
+    queries CVEs by `virtualMatchString`. Each CVE is checked against the asset's *version*:
+    CVEs the version is confirmed not to be affected by are dropped, and the rest carry a
+    `version_status` of `confirmed` or `unconfirmed` (product-level match, version not
+    determinable). Results are cached, KEV-flagged, sorted by CVSS; the top `limit` returned.
     """
     if not cpe_hint:
         return []
@@ -221,10 +282,14 @@ def lookup_cves_by_cpe(
         cache.parent.mkdir(parents=True, exist_ok=True)
         cache.write_text(json.dumps(raw), encoding="utf-8")
 
+    asset_version = (cpe_hint.split(":") + ["", "", ""])[2]
     kev = kev or set()
     out = []
     for item in raw.get("vulnerabilities", []):
         cve = item["cve"]
+        status = _version_status(asset_version, cve, base)
+        if status == "not-affected":
+            continue  # version-aware: drop CVEs the asset's version is not subject to
         cve_id = cve["id"]
         score, severity = _cvss(cve)
         desc = next(
@@ -236,6 +301,7 @@ def lookup_cves_by_cpe(
             "cvss": score,
             "severity": severity,
             "known_exploited": cve_id in kev,
+            "version_status": status,
             "description": desc,
         })
     # worst first (KEV, then CVSS); keep the top `limit`
@@ -243,7 +309,29 @@ def lookup_cves_by_cpe(
     return out[:limit]
 
 
-def load_cve_snapshot(path: str = "data/cve_snapshot.json") -> dict:
-    """Load the committed CVE snapshot {cpe_hint: [cves]} used for offline briefings."""
+def attack_provenance(path: str = "data/attack_ics.json") -> str:
+    """Provenance for the ATT&CK bundle: source + fetch date (the bundle is rolling master)."""
+    from datetime import datetime, timezone
+
     p = Path(path)
-    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+    if not p.exists():
+        return "not loaded"
+    fetched = datetime.fromtimestamp(p.stat().st_mtime, timezone.utc).strftime("%Y-%m-%d")
+    return f"MITRE CTI master, fetched {fetched}"
+
+
+def load_cve_snapshot(path: str = "data/cve_snapshot.json") -> dict:
+    """Load the committed CVE snapshot {cpe_hint: [cves]} (new {_meta, products} or legacy flat)."""
+    p = Path(path)
+    if not p.exists():
+        return {}
+    data = json.loads(p.read_text(encoding="utf-8"))
+    return data.get("products", data)
+
+
+def load_cve_snapshot_meta(path: str = "data/cve_snapshot.json") -> dict:
+    """Provenance metadata for the CVE snapshot (generation date, KEV date/count)."""
+    p = Path(path)
+    if not p.exists():
+        return {}
+    return json.loads(p.read_text(encoding="utf-8")).get("_meta", {})

@@ -49,9 +49,12 @@ to 0–100.
 
 | Factor (weight) | Signal (0–100) | Why this weight |
 |-----------------|----------------|-----------------|
-| Exposure (**0.40**) | `100 × 0.7^d`, d = hops from the nearest entry node on the reachability graph | Highest weight: reachability is the dominant determinant of whether a capable actor can act at all. Decay 0.7 ≈ "each enforced hop roughly a third harder." |
-| Protocol auth (**0.30**) | 100 if the asset speaks an unauthenticated protocol, else 20 | Unauthenticated OT protocols are the defining ICS weakness, but secondary to being reachable in the first place. |
-| Known-exploited (**0.30**) | 100 if any attached CVE is in CISA KEV; else worst-CVSS×10; else 0 | A live, exploited vuln is a strong signal — weighted equal to auth, below exposure because a KEV CVE on an unreachable asset is still low-likelihood. |
+| Exposure (**0.60**) | `100 × 0.7^d`, d = hops from the nearest entry node on the reachability graph | Highest weight: reachability is the dominant determinant of whether a capable actor can act at all. Decay 0.7 ≈ "each enforced hop roughly a third harder." |
+| Protocol auth (**0.40**) | 100 if the asset speaks an unauthenticated protocol, else 20 | Unauthenticated OT protocols are the defining ICS weakness, but secondary to being reachable in the first place. |
+
+A former third likelihood factor (known-exploited / CVSS, weight 0.30) was **removed** after
+an ablation (`experiments/ablation_followup.py`) showed it changed no asset's band or rank —
+even the asset carrying a KEV CVE. See the KEV escalator below.
 
 ## Impact factors and weights
 
@@ -62,28 +65,33 @@ to 0–100.
 | Process criticality (**0.60**) | by Purdue level: L0/L1 = 100, L2 = 60, L3 = 40, DMZ = 30, L4 = 20, L5 = 10 | Dominant: physical-process impact is the whole point of ICS risk. A controller is consequential regardless of how many neighbors it has. |
 | Blast radius (**0.40**) | downstream-dependent assets below it in the Purdue stack, normalized | Secondary amplifier: a controller that many process assets depend on is worse than an isolated one. |
 
-CVSS scores, where CVEs are attached, feed the known-exploited factor.
+## KEV escalator (post-lookup)
+
+After the Table I-2 risk band is computed, an asset carrying an **actively-exploited
+(CISA KEV)** CVE has its band **escalated by one level** (capped at Very High). This reflects
+CISA BOD 22-01's must-patch posture and makes the KEV signal decision-relevant — the
+ablation showed it was inert as a weighted factor, so it is applied as a discrete escalation
+where it actually moves the result.
 
 ## Sensitivity — does the ranking depend on the exact weights?
 
 `scoring.sensitivity()` re-scores under every combination of the likelihood and impact
-weights perturbed by **±20%** (243 weight settings) and measures stability. Results on the
-shipped architectures:
+weights perturbed by **±20%** and measures stability. Results on the shipped architectures:
 
-| Architecture | Highest-risk asset stable | Per-asset band stable | Top-3 set stable |
-|--------------|---------------------------|-----------------------|------------------|
-| Transit signaling | **100%** | 92% | 76% |
-| Water treatment | **100%** | 92% | 89% |
+| Architecture | Highest-risk asset stable | Top-3 set stable | Per-asset band stable |
+|--------------|---------------------------|------------------|-----------------------|
+| Transit signaling | **100%** | 89% | 78% |
+| Water treatment | **100%** | 89% | 71% |
 
-**Honest reading.** The single highest-priority asset is invariant to the weights, and bands
-move in <10% of cases. The top-3 *set* is not perfectly stable — but the only churn is a
-**near-tie at rank #3 between two assets in the same risk band** (transit:
-`track_circuit_sensor` ↔ `scada_server`). So the headline conclusion — *which assets to
-harden first* — is robust to the weights; only fine-grained ordering among equally-banded
-assets shifts. The weights are a defensible heuristic, not load-bearing magic numbers.
+**Honest reading.** The decision-relevant output — *which assets to harden first* — is robust:
+the single highest-priority asset is invariant, and the top-3 set is 89% stable (churn confined
+to near-tied, same-band assets). Per-asset *bands* are more weight-sensitive (~75%) than the
+earlier 3-factor model — the old 92% was partly an artifact of the inert third factor (usually
+0) dampening variance; removing it exposed the true band sensitivity. Honest tradeoff: priority
+ranking is robust, individual bands are a heuristic.
 
-`test_scoring.py` enforces this (top-1 stability = 100%, band stability ≥ 90%, bounded
-contender set), so a future weight change that broke the robustness would fail CI.
+`test_scoring.py` enforces this (top-1 = 100%, top-3 set ≥ 80%, band ≥ 70%, bounded contender
+set), so a change that broke the priority robustness would fail CI.
 
 ## References
 

@@ -5,7 +5,7 @@ expert judgement). This harness tests what IS computable:
 
   - Discriminant:  does the full model rank differently from a trivial "Purdue criticality
                    only" baseline, or is the extra machinery decorative?
-  - Ablation:      which factors (exposure, auth, known-exploited, blast radius) actually
+  - Ablation:      which factors (exposure, auth, blast radius) actually
                    move the ranking when removed?
   - Convergent:    does the model agree with independent lenses it does not directly use
                    (graph betweenness, CVE severity)?
@@ -125,7 +125,6 @@ def methods_for(arch_path: str):
                                    for n, a in arch.assets.items()},
         "ablate exposure": ablate_lik("exposure"),
         "ablate auth": ablate_lik("auth"),
-        "ablate known-exploited": ablate_lik("known_exploited"),
         "ablate blast-radius": _model_scores(arch, graph, cves,
                                              iw=_drop(IMPACT_WEIGHTS, "blast_radius")),
         "PROXY: betweenness": chokepoints(reach),
@@ -135,7 +134,7 @@ def methods_for(arch_path: str):
     return arch, reach, cves, model, methods
 
 
-_ABLATIONS = ["ablate exposure", "ablate auth", "ablate known-exploited", "ablate blast-radius"]
+_ABLATIONS = ["ablate exposure", "ablate auth", "ablate blast-radius"]
 _PROXIES = ["PROXY: betweenness", "PROXY: entry distance", "PROXY: CVE severity"]
 
 
@@ -203,8 +202,9 @@ def run() -> str:
     lines.append("- The headline output (*which assets to harden first*) is largely determined by "
                  "process criticality (Purdue level). The likelihood factors and CVE signal refine "
                  "the ordering but rarely change the top of the list.")
-    lines.append("- The **known-exploited / CVE signal is sparse** (few assets carry a KEV CVE), "
-                 "so it is nearly inert for *ranking* even though it is meaningful per-asset.")
+    lines.append("- The **known-exploited / CVE signal** is now applied as a band escalator, not "
+                 "a weighted likelihood factor — an ablation (ablation_followup.py) showed it "
+                 "changed no band or rank as a weight, so KEV CVEs now escalate the band directly.")
     lines.append("- There is **no independent corroboration** that the combined ranking is right; "
                  "convergent agreement with structural and vulnerability lenses is weak by design.")
     lines.append("- Architectures are **n=2, synthetic, single-author**, so face validity is weak. "
