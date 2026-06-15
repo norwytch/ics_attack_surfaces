@@ -9,10 +9,13 @@ ICS techniques, scores and ranks the risk with NIST SP 800-30, and writes a stru
 vulnerability briefing. Everything runs on public reference architectures and public data,
 so there is no proprietary content.
 
-The project covers cyber-physical threat modeling on the Purdue model and IEC 62443
-zones/conduits, working knowledge of ATT&CK for ICS, NIST SP 800-30, and the CISA KEV
-catalog, and a reproducible pipeline built over public security feeds. The design decisions
-and their trade-offs are written up in [ROADMAP.md](ROADMAP.md).
+What it is for, concretely: turning a plain-text description of an ICS into a standardized,
+inspectable, framework-aligned briefing (ATT&CK for ICS, NIST SP 800-30, IEC 62443, CISA
+KEV/EPSS) plus an ATT&CK Navigator layer, repeatably and from public data. The validation
+below is candid about the limits — the risk ranking mostly reproduces "sort by Purdue
+criticality" (Kendall's τ-b ≈ 0.7 against that baseline), so the value is the repeatable,
+auditable workflow and the framework integration, not a novel risk-scoring model. Design
+decisions and trade-offs are in [ROADMAP.md](ROADMAP.md).
 
 ## Status
 
@@ -114,13 +117,15 @@ now applies as a band escalator: an actively-exploited CVE bumps the risk band u
 the segmentation policy excludes no attack paths on either reference plant, so its value is
 detecting IT→OT bypasses rather than filtering paths.
 
-A second experiment ([experiments/CRITERION_RESULTS.md](experiments/CRITERION_RESULTS.md),
-`python -m experiments.criterion_validity`) runs the tool, unchanged, on a reconstruction of
-the 2015 Ukraine power-grid attack and checks it against the documented incident
-(E-ISAC/SANS). It flags the VPN IT→OT bypass that was the documented root cause, recovers
-every documented attack-path waypoint in order, and assigns the relevant OT techniques. The
-limits: it is one incident, the architecture is reconstructed rather than authored blind, and
-the IT-stage, firmware, and wiper techniques are outside what the tool models.
+A reconstruction check ([experiments/CRITERION_RESULTS.md](experiments/CRITERION_RESULTS.md),
+`python -m experiments.criterion_validity`) rebuilds the 2015 Ukraine power-grid attack from
+public reporting (E-ISAC/SANS) and confirms the unchanged tool can express and traverse it:
+it flags the VPN IT→OT bypass that was the documented root cause, recovers the documented
+path, and assigns the OT techniques, with nothing special-cased. This is an
+integration/reachability check, **not predictive validity** — the expected path is the one
+the same author encoded in the reconstructed model. A predictive test needs an architecture
+authored by someone else, which is still open (see ROADMAP). The tool also models OT exposure
+only, so the IT-stage, firmware, and wiper techniques are out of scope.
 
 A scale test ([experiments/SCALE.md](experiments/SCALE.md), `python -m experiments.scale`)
 generates synthetic plants up to about 1,100 nodes and times each stage. Per-run analysis

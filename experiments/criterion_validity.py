@@ -1,16 +1,19 @@
-"""Criterion-validity test against a documented incident: 2015 Ukraine power grid.
+"""Incident-reconstruction check against the 2015 Ukraine power-grid attack.
 
-Stronger than the face-validity check in validity.py: the ground truth here is a REAL,
-externally-documented attack (E-ISAC/SANS 2016; ICS-CERT IR-ALERT-H-16-056-01), defined
-from the report — not from the tool's output. The architecture is reconstructed from public
-reporting (experiments/ukraine_2015.yaml) and the tool is run UNCHANGED. We then measure
-whether the tool independently recovers the documented path, assets, root cause, and
-techniques.
+NOT criterion validity. The architecture (experiments/ukraine_2015.yaml) is reconstructed by
+the same author who then declares the expected path, so the expected waypoints ARE the nodes
+encoded in the graph in sequence. Recovering them confirms the tool can *express and traverse*
+a documented incident — it is an integration / reachability check of the modeling and
+path-finding layers, not evidence that the tool *predicts* attacks. The honest version of this
+(predictive / criterion validity) needs a blind architecture authored by someone else, and is
+still open (see ROADMAP).
 
-Honesty caveats: the architecture is still hand-authored (residual modeling bias), and the
-tool only models OT exposure — it cannot represent the IT initial-access stage (spear-phish),
-firmware overwrite, or the KillDisk wiper. Those are reported as out-of-scope, not as misses
-to hide.
+What it does usefully show: a real, externally-documented attack (E-ISAC/SANS 2016; ICS-CERT
+IR-ALERT-H-16-056-01) is representable in the schema, and the unchanged tool surfaces its root
+cause, path, and OT techniques — i.e. nothing in the pipeline had to be special-cased for it.
+
+The tool models OT exposure only, so the IT initial-access stage (spear-phish), firmware
+overwrite, and KillDisk wiper are out of scope, reported as such rather than hidden.
 
 Run: python -m experiments.criterion_validity   (writes experiments/CRITERION_RESULTS.md)
 """
@@ -96,11 +99,14 @@ def run() -> str:
     n = len(comp)
     hit = len(topn & set(comp))
     oos = ", ".join(DOCUMENTED["out_of_scope_techniques"])
-    L = ["# Criterion-Validity Test — 2015 Ukraine Power Grid\n",
-         f"_Ground truth: {DOCUMENTED['source']}._\n",
-         "Architecture ([experiments/ukraine_2015.yaml](ukraine_2015.yaml)) reconstructed from "
-         "public reporting; the tool is run unchanged. Ground truth is the documented attack, "
-         "defined independently of the tool's output.\n",
+    L = ["# Incident-Reconstruction Check — 2015 Ukraine Power Grid\n",
+         f"_Source: {DOCUMENTED['source']}._\n",
+         "> **This is not criterion validity.** The architecture "
+         "([experiments/ukraine_2015.yaml](ukraine_2015.yaml)) is reconstructed by the same "
+         "author who declares the expected path, so the expected waypoints are the nodes encoded "
+         "in the graph. This is an **integration / reachability check** — it shows a real "
+         "documented attack is *expressible and traversable* by the unchanged tool, not that the "
+         "tool *predicts* attacks. A predictive test needs a blind architecture (see ROADMAP).\n",
          "## Results\n",
          f"- **Root cause flagged:** {'YES' if bypass_flagged else 'NO'} — the documented root "
          f"cause was a VPN from business IT into the ICS network without MFA "
@@ -118,15 +124,16 @@ def run() -> str:
          "",
          "## What the tool cannot capture (out of scope, not misses)\n",
          "The tool models OT exposure, so it does not represent the documented IT-stage and "
-         f"destructive techniques: {oos}. A criterion-validity claim covers only the OT "
-         "attack-surface portion of the incident.\n",
-         "## Honest reading\n",
-         "- This is **reconstruction-based** criterion validity: stronger than face validity (a "
-         "real, independently-documented incident), weaker than a blind test (the architecture is "
-         "still hand-authored, so modeling bias is possible).",
-         "- n=1 incident. Recovering one documented attack is encouraging, not conclusive; it "
-         "shows the tool's IT->OT-bypass and command-path reasoning aligns with one real case it "
-         "was not built around.",
+         f"destructive techniques: {oos}. This check covers only the OT attack-surface portion "
+         "of the incident.\n",
+         "## Reading\n",
+         "- **What it shows:** a real, externally-documented attack is representable in the "
+         "schema, and the unchanged tool surfaces its root cause, path, and OT techniques — "
+         "nothing was special-cased for it.",
+         "- **What it does NOT show:** predictive validity. The expected waypoints are the nodes "
+         "the author wired in, so 'recovers them in order' is close to confirming the path-finding "
+         "layer works. That is useful as an integration test, not as evidence the tool predicts "
+         "real attacks.",
          "- **Caveat on asset recall:** with ~10 assets and the ranking driven mostly by Purdue "
          "criticality (see RESULTS.md), recall@5 mostly confirms the 5 OT assets outrank the 5 IT "
          "ones — weakly discriminating. Path recovery and the root-cause flag are stronger.",

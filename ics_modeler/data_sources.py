@@ -193,12 +193,24 @@ def resolve_cpe_base(keyword: str, cache_dir: str = CACHE_DIR,
     return None
 
 
+_PRERELEASE_RE = re.compile(r"[-_+](?:rc|alpha|beta|pre|dev|snapshot|build)\w*$", re.I)
+
+
 def _vparts(v) -> list[int] | None:
-    parts = []
-    for p in str(v).replace("-", ".").split("."):
-        if not p.isdigit():
-            return None
-        parts.append(int(p))
+    """Parse a version into a comparable int tuple, best-effort across common OT firmware
+    schemes (`v1.4.3`, `R3.90.00`, `FW 2.1`, `2.1a`, `1.4.3-rc2`). Each segment contributes
+    its leading digits, so revision letters (`2.1a` → 2.1) and prefixes are tolerated.
+    Returns None only when genuinely ambiguous (no digits, or a hex/build id)."""
+    s = str(v).strip().lower()
+    if "0x" in s:                       # hex build identifiers are not ordered numerically
+        return None
+    s = _PRERELEASE_RE.sub("", s)        # drop a trailing pre-release tag
+    first = re.search(r"\d", s)
+    if not first:
+        return None
+    s = s[first.start():]               # drop a leading prefix (v, r, fw, ...)
+    parts = [int(m.group()) for seg in re.split(r"[._\-+]", s)
+             if (m := re.match(r"\d+", seg))]
     return parts or None
 
 

@@ -138,6 +138,29 @@ def test_version_status_filters_by_version():
     assert _version_status("", cve, base) == "unconfirmed"       # no asset version
 
 
+def test_version_parser_handles_real_ot_schemes():
+    from ics_modeler.data_sources import _vcmp
+
+    assert _vcmp("R3.90.00", "R3.89.00") == 1     # R-prefix (Schneider-style)
+    assert _vcmp("v1.4.3", "1.4.10") == -1        # v-prefix, multi-digit minor
+    assert _vcmp("2.1a", "2.1") == 0              # revision-letter suffix
+    assert _vcmp("1.4.3-rc2", "1.4.3") == 0       # pre-release tag dropped
+    assert _vcmp("FW 2.1", "2.0") == 1            # "FW " prefix
+    assert _vcmp("0xdeadbeef", "1.0") is None     # genuinely ambiguous -> None
+
+
+def test_version_status_confirms_with_ot_scheme():
+    # previously these non-numeric versions fell through to "unconfirmed"
+    from ics_modeler.data_sources import _version_status
+
+    base = "cpe:2.3:o:vendor:product"
+    cve = {"configurations": [{"nodes": [{"cpeMatch": [
+        {"vulnerable": True, "criteria": "cpe:2.3:o:vendor:product:*:*:*:*:*:*:*:*",
+         "versionEndExcluding": "3.90.00"}]}]}]}
+    assert _version_status("R3.89.00", cve, base) == "confirmed"
+    assert _version_status("R3.91.00", cve, base) == "not-affected"
+
+
 def test_cve_snapshot_present_and_nonempty():
     from ics_modeler.data_sources import load_cve_snapshot
 

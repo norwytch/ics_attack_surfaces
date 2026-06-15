@@ -77,6 +77,13 @@ three assets (`scada_server`, `operator_hmi`, `distribution_rtu`) that KEV alone
 the two signals are complementary. Applied as a discrete escalation because an ablation showed
 the old weighted CVE factor moved no result.
 
+**Caveat — escalation ignores version confirmation.** The escalator fires on any attached
+KEV / high-EPSS CVE regardless of its `version_status`, including product-level matches where
+the asset's installed version could not be confirmed affected. This is deliberately
+conservative (an exploited CVE for *some* version of the product is worth flagging), but it
+means escalation can fire hardest exactly where version matching was weakest. The briefing
+marks each unconfirmed CVE as *(version not confirmed)* so the analyst can judge.
+
 ## Sensitivity — does the ranking depend on the exact weights?
 
 `scoring.sensitivity()` re-scores under every combination of the likelihood and impact

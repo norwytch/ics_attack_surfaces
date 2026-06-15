@@ -263,20 +263,19 @@ on the Oldsmar pattern.
 an identical top-3 — process criticality does most of the work; **authentication** is the most
 influential likelihood factor; the **KEV/CVE signal is sparse and nearly inert for ranking**;
 convergent agreement with independent lenses is weak; criterion validity is untested.
-### 15. Criterion validity vs a documented incident — DONE
-**Why.** Validity item #14 explicitly could not test agreement with a real attack. Criterion
-validity needs an externally-documented incident as ground truth.
-**What was done.** Reconstructed the **2015 Ukraine power-grid attack** victim architecture
-from public reporting (E-ISAC/SANS; ICS-CERT IR-ALERT-H-16-056-01) in
-`experiments/ukraine_2015.yaml`, defined the ground truth from the report, and ran the
-**unchanged** tool (`experiments/criterion_validity.py`,
-[experiments/CRITERION_RESULTS.md](experiments/CRITERION_RESULTS.md)). Measured: root-cause
-flag, attack-path recovery (LCS over documented waypoints), critical-asset recall, and
-technique recall.
-**Findings.** The tool independently flags the VPN IT→OT bypass (the documented root cause),
-recovers 100% of the documented waypoints in order, and assigns all mappable documented OT
-techniques. Honestly scoped: reconstruction-based (not blind), n=1, and IT-stage / firmware /
-wiper techniques are out of the tool's OT-exposure scope.
+### 15. Incident reconstruction check (NOT criterion validity) — DONE, relabeled
+**Correction.** This was originally framed as criterion validity, which a code review correctly
+called circular: the architecture is reconstructed by the same author who then declares the
+expected path, so the expected waypoints *are* the nodes encoded in the graph. Recovering them
+confirms the modeling and path-finding layers work on a documented incident — an integration /
+reachability check — not that the tool *predicts* attacks. Relabeled accordingly in the script,
+`CRITERION_RESULTS.md`, and the README.
+**What it does show.** The **2015 Ukraine power-grid attack** (E-ISAC/SANS; ICS-CERT
+IR-ALERT-H-16-056-01), reconstructed in `experiments/ukraine_2015.yaml`, is expressible in the
+schema, and the unchanged tool surfaces its root cause, path, and OT techniques without any
+special-casing. Useful, but integration-level evidence.
+**Still open.** True predictive / criterion validity needs a **blind** architecture authored by
+someone other than the tool author. Cannot be closed solo.
 
 ### 16. Version-aware CVE matching + provenance stamps — DONE
 **Why.** CVEs were matched at product level (version dropped), so old CVEs got attached to
