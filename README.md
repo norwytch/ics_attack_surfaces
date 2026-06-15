@@ -4,45 +4,44 @@
 
 Threat modeling and vulnerability prioritization for ICS/SCADA reference architectures.
 
-Models the attack surface of an industrial control system, maps components to MITRE
-ATT&CK for ICS techniques, scores and prioritizes risk (NIST SP 800-30), and generates
-a structured vulnerability briefing. Built entirely on **public reference architectures
-and public data** — no proprietary content.
+It models an industrial control system as a graph, maps each component to MITRE ATT&CK for
+ICS techniques, scores and ranks the risk with NIST SP 800-30, and writes a structured
+vulnerability briefing. Everything runs on public reference architectures and public data,
+so there is no proprietary content.
 
-**What it demonstrates:** cyber-physical threat modeling on the Purdue model and IEC 62443
-zones/conduits, fluency with ATT&CK for ICS / NIST SP 800-30 / CISA KEV, segmentation and
-attack-path reasoning, an ATT&CK Navigator layer export, and a reproducible data pipeline
-over public security sources. Design decisions and trade-offs are recorded in
-[ROADMAP.md](ROADMAP.md).
+The project covers cyber-physical threat modeling on the Purdue model and IEC 62443
+zones/conduits, working knowledge of ATT&CK for ICS, NIST SP 800-30, and the CISA KEV
+catalog, and a reproducible pipeline built over public security feeds. The design decisions
+and their trade-offs are written up in [ROADMAP.md](ROADMAP.md).
 
 ## Status
 
-End-to-end functional. The pipeline loads the reference architecture, maps assets to
-ATT&CK for ICS techniques, scores risk (NIST 800-30 Table I-2), runs **segmentation-aware**
-attack-path / chokepoint analysis (paths respect the firewall policy; IT→OT boundary
-bypasses are flagged), correlates real campaigns, and generates the briefing + figures.
-Real CVEs (CPE-matched, KEV-flagged) are attached from a committed snapshot **by default**;
+The pipeline runs end to end. It loads a reference architecture, maps assets to ATT&CK for
+ICS techniques, scores risk with the 800-30 Table I-2 lookup, runs segmentation-aware
+attack-path and chokepoint analysis (attack paths respect the firewall policy, and IT→OT
+boundary bypasses are flagged), correlates known campaigns, and generates the briefing and
+figures. Real CVEs (CPE-matched and KEV-flagged) come from a committed snapshot by default;
 `--cves` refreshes them live from NVD.
 
 ## Sample output
 
-A full generated briefing for the water-treatment model is committed at
-[`examples/water_treatment/`](examples/water_treatment/briefing.md) — executive summary,
-risk-ranked assets, IEC 62443 zones/conduits, IT/OT segmentation findings, ranked attack
-paths, CPE-matched CVEs, confidence-scored threat-trend correlation, and ATT&CK-grounded
-mitigations (M-codes). It also exports an
-[ATT&CK Navigator layer](examples/water_treatment/attack_navigator_layer.json) (load it at
-[attack-navigator](https://mitre-attack.github.io/attack-navigator/)). The modeled asset
-graph (color = Purdue level, size = impact):
+A full generated briefing for the water-treatment model is committed under
+[`examples/water_treatment/`](examples/water_treatment/briefing.md): executive summary,
+risk-ranked assets, IEC 62443 zones and conduits, IT/OT segmentation findings, ranked attack
+paths, CPE-matched CVEs, confidence-scored campaign correlation, and ATT&CK mitigations
+(M-codes). It also writes an
+[ATT&CK Navigator layer](examples/water_treatment/attack_navigator_layer.json) you can load
+at [attack-navigator](https://mitre-attack.github.io/attack-navigator/). The asset graph
+below is colored by Purdue level and sized by impact.
 
 ![ICS asset graph](examples/water_treatment/figures/network.png)
 
 ## Demo
 
-[`notebooks/demo.ipynb`](notebooks/demo.ipynb) is an **executed** end-to-end walkthrough —
-load the model → map ATT&CK techniques → score risk → flag segmentation bypasses → rank
-attack paths → stress-test the weights → render the figures. Outputs are saved in the
-notebook, so it reads on GitHub without running. To run it yourself:
+[`notebooks/demo.ipynb`](notebooks/demo.ipynb) walks through the whole pipeline: load the
+model, map techniques, score risk, flag segmentation bypasses, rank attack paths,
+stress-test the weights, render the figures. It is saved with its outputs, so it reads on
+GitHub without running. To run it locally:
 
 ```bash
 pip install -e ".[dev]" jupyter
@@ -57,7 +56,7 @@ ics_modeler/ assets · mapping · scoring · trends · report · data_sources ·
 scripts/     One-off data builders (ATT&CK harvest, CVE snapshot)
 tests/       Unit tests
 examples/    Committed sample briefing + figures
-notebooks/   demo.ipynb — executed end-to-end walkthrough
+notebooks/   demo.ipynb, an executed walkthrough
 results/     Generated briefing + figures (gitignored)
 ```
 
@@ -65,16 +64,16 @@ results/     Generated briefing + figures (gitignored)
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"                        # installs the package + dev tooling
+pip install -e ".[dev]"                        # the package plus dev tooling
 #   reproducible: pip install -r requirements.lock && pip install -e . --no-deps
 pytest                                          # run the tests
 ics-modeler                                     # transit-signaling model (default)
 ics-modeler --arch data/water_treatment.yaml --out results_water   # water-treatment model
-ics-modeler --cves                              # ...with live NVD CVE + CISA KEV enrichment
+ics-modeler --cves                              # with live NVD CVE + CISA KEV enrichment
 ```
 
-`ics-modeler` is the installed console command; `python -m ics_modeler.pipeline` is
-equivalent if you'd rather not install.
+`ics-modeler` is the installed console command. `python -m ics_modeler.pipeline` does the
+same thing if you would rather not install.
 
 ## Development
 
@@ -84,72 +83,75 @@ mypy ics_modeler                         # type-check
 pytest                                   # tests
 ```
 
-CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs all three on Python
-3.10–3.12 for every push and PR, plus [`pip-audit`](https://github.com/pypa/pip-audit)
-against the lockfile (SHA-pinned actions, Dependabot enabled). See
-[SECURITY.md](SECURITY.md) for the disclosure policy.
+CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs lint, type-check, and tests on
+Python 3.10–3.12 for every push and pull request, plus
+[`pip-audit`](https://github.com/pypa/pip-audit) against the lockfile. GitHub Actions are
+pinned by commit SHA and Dependabot is enabled. See [SECURITY.md](SECURITY.md) for the
+disclosure policy.
 
-Two reference architectures ship with the project — a transit-signaling plant
+Two reference architectures ship with the project: a transit-signaling plant
 ([data/reference_architecture.yaml](data/reference_architecture.yaml)) and a municipal
-water-treatment plant ([data/water_treatment.yaml](data/water_treatment.yaml), different
-vendors and protocols) — to demonstrate the framework generalizes.
+water-treatment plant ([data/water_treatment.yaml](data/water_treatment.yaml), with
+different vendors and protocols). Running on both is how the project checks that the approach
+generalizes beyond a single hand-tuned example.
 
 ## Validation
 
-A validity experiment ([experiments/RESULTS.md](experiments/RESULTS.md), reproducible via
+The `experiments/` directory checks how much of the analysis to trust, and reports the
+results even when they are not flattering.
+
+A validity experiment ([experiments/RESULTS.md](experiments/RESULTS.md),
 `python -m experiments.validity`) ablates the scoring factors and compares the ranking
-against a trivial Purdue-criticality baseline and independent lenses (Kendall's τ-b).
-Honest headline: the priority ranking is **largely driven by process criticality**
-(τ-b ≈ 0.7 vs. the baseline, identical top-3), and **authentication** is the likelihood factor
-that most changes the order. A follow-up
-([experiments/ABLATION_FOLLOWUP.md](experiments/ABLATION_FOLLOWUP.md)) **acted** on two
-findings: the CVE/KEV signal was inert as a weighted factor, so it was re-applied as a **band
-escalator** (actively-exploited → +1 band); and segmentation excludes no paths on the
-reference plants — its real value is **bypass detection**, not path filtering.
+against a "rank by Purdue criticality" baseline and a few independent lenses, using Kendall's
+τ-b. The ranking tracks that baseline closely (τ-b around 0.7, same top three), so process
+criticality does most of the work; authentication is the factor that shifts the order the
+most. A follow-up ([experiments/ABLATION_FOLLOWUP.md](experiments/ABLATION_FOLLOWUP.md))
+acted on two of those findings. The CVE/KEV signal did nothing as a weighted factor, so it
+now applies as a band escalator: an actively-exploited CVE bumps the risk band up one. And
+the segmentation policy excludes no attack paths on either reference plant, so its value is
+detecting IT→OT bypasses rather than filtering paths.
 
 A second experiment ([experiments/CRITERION_RESULTS.md](experiments/CRITERION_RESULTS.md),
-`python -m experiments.criterion_validity`) runs the **unchanged** tool on a reconstruction
-of the **2015 Ukraine power-grid attack** and checks it against the documented incident
-(E-ISAC/SANS): it independently **flags the VPN IT→OT bypass** (the documented root cause),
-**recovers 100% of the documented attack-path waypoints in order**, and assigns the
-documented OT techniques — with honest caveats (n=1, reconstruction-based, and the IT-stage /
-firmware / wiper techniques are out of the tool's modeled scope).
+`python -m experiments.criterion_validity`) runs the tool, unchanged, on a reconstruction of
+the 2015 Ukraine power-grid attack and checks it against the documented incident
+(E-ISAC/SANS). It flags the VPN IT→OT bypass that was the documented root cause, recovers
+every documented attack-path waypoint in order, and assigns the relevant OT techniques. The
+limits: it is one incident, the architecture is reconstructed rather than authored blind, and
+the IT-stage, firmware, and wiper techniques are outside what the tool models.
 
 A scale test ([experiments/SCALE.md](experiments/SCALE.md), `python -m experiments.scale`)
-generates synthetic plants up to ~1,100 nodes and times each stage: per-run analysis stays in
-the tens of milliseconds and the narrative holds, with two components flagged for a known,
-local fix before thousands of nodes — **betweenness centrality** (sample-approximate it) and
-**`sensitivity()`** (memoize graph-derived factors).
+generates synthetic plants up to about 1,100 nodes and times each stage. Per-run analysis
+stays in the tens of milliseconds. Two stages would need a known fix before tens of thousands
+of nodes: betweenness centrality (sample-approximate it) and `sensitivity()` (cache the
+graph-derived factors).
 
 ## Related work and contribution
 
-Attack-path analysis on infrastructure graphs is well-established: logic-based attack-graph
-generation (MulVAL, Ou et al. 2005), topological vulnerability analysis (Jajodia & Noel),
-Bayesian/probabilistic attack graphs, and CVSS environmental scoring all predate this by
-years; commercial ICS platforms (Dragos, Claroty, Nozomi) do live passive discovery and risk
-scoring on real networks. The graph algorithms used here — k-shortest paths, betweenness — are
+Attack-path analysis on infrastructure graphs is well-established. MulVAL (Ou et al., 2005)
+generates attack graphs from logic rules; topological vulnerability analysis (Jajodia and
+Noel) and Bayesian attack graphs followed soon after; CVSS environmental scoring predates all
+of it. Commercial ICS platforms (Dragos, Claroty, Nozomi) do live passive discovery and risk
+scoring on real networks. The graph algorithms here, k-shortest paths and betweenness, are
 textbook, and the risk model is NIST SP 800-30.
 
-**The contribution is integration, not algorithms.** This project wires ATT&CK for ICS
-technique mapping, IEC 62443 zones/conduits, NIST 800-30 scoring, CPE/KEV CVE enrichment, and
-segmentation-aware reachability into one reproducible, auditable pipeline that emits a
-decision-ready briefing and an ATT&CK Navigator layer from a plain-text architecture model. It
-is deliberately **model-based** (no live network), **data-driven** (rules, architectures, and
-trends are inspectable YAML), and **self-evaluated** (see Validation) — which is where it
-differs from the academic attack-graph tools (heavier, network-config-driven) and the
-commercial platforms (closed, live-discovery, not publicly auditable). The honest claim is *a
-transparent ICS attack-surface modeler integrating current public frameworks*, not a novel
-analysis method.
+The contribution is integration rather than a new algorithm. The project connects ATT&CK for
+ICS mapping, IEC 62443 zones and conduits, NIST 800-30 scoring, CPE/KEV CVE enrichment, and
+segmentation-aware reachability into one pipeline that produces a briefing and an ATT&CK
+Navigator layer from a plain-text model. It is model-based (no live network), data-driven
+(the rules, architectures, and campaigns are all inspectable YAML), and tested against its
+own outputs. That mix is what separates it from the academic attack-graph tools, which are
+heavier and config-driven, and from the commercial platforms, which are closed and rely on
+live discovery.
 
 ## Pipeline
 
-1. Load + validate the architecture YAML → asset graph + segmentation policy
-2. Map assets → ATT&CK for ICS techniques via `mapping_rules.yaml`
-3. Attach CPE-matched, KEV-flagged CVEs (committed snapshot by default; `--cves` for live NVD)
-4. Score risk (NIST 800-30 Table I-2) + segmentation-aware attack-path / chokepoint analysis
-5. Correlate real campaigns (`threat_trends.yaml`) with a confidence score
-6. Generate the briefing (incl. IEC 62443 zones/conduits), figures, and an ATT&CK Navigator
-   layer into `results/`
+1. Load and validate the architecture YAML into an asset graph and a segmentation policy.
+2. Map assets to ATT&CK for ICS techniques via `mapping_rules.yaml`.
+3. Attach CPE-matched, KEV-flagged CVEs (committed snapshot by default, `--cves` for live NVD).
+4. Score risk (NIST 800-30 Table I-2) and run segmentation-aware attack-path/chokepoint analysis.
+5. Correlate known campaigns from `threat_trends.yaml`, with a confidence score.
+6. Write the briefing (including IEC 62443 zones/conduits), figures, and an ATT&CK Navigator
+   layer into `results/`.
 
 ## Data sources
 

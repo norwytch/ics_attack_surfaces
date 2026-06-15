@@ -83,12 +83,12 @@ weights perturbed by **±20%** and measures stability. Results on the shipped ar
 | Transit signaling | **100%** | 89% | 78% |
 | Water treatment | **100%** | 89% | 71% |
 
-**Honest reading.** The decision-relevant output — *which assets to harden first* — is robust:
+**Reading.** The decision-relevant output — *which assets to harden first* — is robust:
 the single highest-priority asset is invariant, and the top-3 set is 89% stable (churn confined
 to near-tied, same-band assets). Per-asset *bands* are more weight-sensitive (~75%) than the
 earlier 3-factor model — the old 92% was partly an artifact of the inert third factor (usually
-0) dampening variance; removing it exposed the true band sensitivity. Honest tradeoff: priority
-ranking is robust, individual bands are a heuristic.
+0) dampening variance; removing it exposed the true band sensitivity. The trade-off: the
+priority ranking is robust, individual bands are a heuristic.
 
 `test_scoring.py` enforces this (top-1 = 100%, top-3 set ≥ 80%, band ≥ 70%, bounded contender
 set), so a change that broke the priority robustness would fail CI.

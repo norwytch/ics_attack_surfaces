@@ -1,8 +1,7 @@
 # Roadmap
 
-Known limitations and planned improvements, in priority order. This is a deliberate
-record of where the model is honest-but-shallow today, and what would make it credible
-as a security tool rather than a demonstration.
+Known limitations and planned improvements, in priority order. It records where the model is
+shallow today and what would make it credible as a security tool rather than a demonstration.
 
 Tiers are ordered by impact on trustworthiness, not by effort.
 
@@ -58,7 +57,7 @@ factors and weights are a documented engineering heuristic — and justifies eve
 a sentence of reasoning. Made the weights injectable in `scoring.py` and added
 `sensitivity()`, which re-scores under all 243 combinations of ±20% weight perturbations and
 reports ranking/band stability.
-**Done when — met (honestly).** The sensitivity result is *not* a clean 100%, and the rubric
+**Done when — met.** The sensitivity result is *not* a clean 100%, and the rubric
 says so: the highest-priority asset is 100% stable and bands move <10%, but the top-3 *set*
 churns at rank #3 between two same-band near-ties (transit 76%, water 89% set-stable). The
 honest conclusion — *which assets to harden first is robust to the weights; fine-grained
@@ -117,7 +116,7 @@ fully rotted (dropped; two solid Stuxnet sources remain), and CISA host URLs wer
 (b) Added a **Scope & limitations** section to every briefing — model-not-network, paths-are-
 reachability-not-exploits, heuristic weights, point-in-time CVEs, trend-matches-mean-shared-
 techniques.
-**Done when — met (honestly).** Every citation was checked and the log records the method and
+**Done when — met.** Every citation was checked and the log records the method and
 finding; two CISA government URLs return 403 to bots and are flagged for a human eyeball
 before external publication. The briefing now ends with a limitations section.
 
@@ -285,7 +284,7 @@ contribution is bypass detection, not path filtering (the exclusion capability i
 unit-tested but doesn't fire here). (b) The **KEV factor** changed no band/rank even for the
 asset that carried a KEV CVE, so it was **removed as a likelihood weight and re-applied as a
 band escalator** (actively-exploited → +1 band, CISA BOD 22-01) — now decision-relevant
-(water's `dosing_plc` goes High → Very High). Sensitivity was re-checked honestly: priority
+(water's `dosing_plc` goes High → Very High). Sensitivity was re-checked: priority
 ranking stays robust (top-1 100%, top-3 89%), per-asset bands are more weight-sensitive (~75%)
 since the removed factor was an inert variance-dampener. Rubric, README, and tests updated.
 
