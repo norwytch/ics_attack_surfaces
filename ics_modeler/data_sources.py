@@ -23,6 +23,7 @@ KEV_URL = (
 )
 NVD_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 NVD_CPE_URL = "https://services.nvd.nist.gov/rest/json/cpes/2.0"
+EPSS_URL = "https://api.first.org/data/v1/epss"
 _TIMEOUT = 30
 
 
@@ -307,6 +308,33 @@ def lookup_cves_by_cpe(
     # worst first (KEV, then CVSS); keep the top `limit`
     out.sort(key=lambda c: (c["known_exploited"], c["cvss"] or 0), reverse=True)
     return out[:limit]
+
+
+def fetch_epss(cve_ids, cache_dir: str = CACHE_DIR, force: bool = False) -> dict:
+    """Return {cve_id: {epss, percentile, date}} from the FIRST.org EPSS API (cached).
+
+    EPSS (Exploit Prediction Scoring System) is a published machine-learning model that
+    estimates the probability a CVE will be exploited in the next 30 days. Scores are heavily
+    right-skewed, so the percentile is the more useful signal. Unknown CVEs map to None.
+    """
+    ids = sorted(set(cve_ids))
+    if not ids:
+        return {}
+    cache = Path(cache_dir) / "epss.json"
+    cached = json.loads(cache.read_text(encoding="utf-8")) if cache.exists() and not force else {}
+    missing = [c for c in ids if c not in cached]
+    for i in range(0, len(missing), 100):  # EPSS API takes a comma-separated batch
+        batch = missing[i:i + 100]
+        resp = requests.get(EPSS_URL, params={"cve": ",".join(batch)}, timeout=_TIMEOUT)
+        resp.raise_for_status()
+        scored = {r["cve"]: {"epss": float(r["epss"]), "percentile": float(r["percentile"]),
+                             "date": r.get("date")} for r in resp.json().get("data", [])}
+        for c in batch:
+            cached[c] = scored.get(c)  # None if EPSS has no score for it
+    if missing:
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        cache.write_text(json.dumps(cached), encoding="utf-8")
+    return {c: cached[c] for c in ids if cached.get(c)}
 
 
 def attack_provenance(path: str = "data/attack_ics.json") -> str:

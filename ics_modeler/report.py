@@ -120,10 +120,10 @@ def generate_briefing(architecture, mapped, scores, paths, chokepoints_, campaig
 
     # CVE summary -----------------------------------------------------------
     L.append("## Known-CVE summary\n")
-    L.append("_Matched by CPE and filtered to the asset's version where determinable; "
-             "entries marked *(version not confirmed)* are product-level matches that may not "
-             "apply to the specific firmware/version. Assets with a KEV (actively-exploited) CVE "
-             "have their risk band escalated +1 (CISA BOD 22-01)._\n")
+    L.append("_Matched by CPE and version-filtered where determinable (*version not confirmed* "
+             "= product-level match). EPSS is FIRST.org's ML estimate of 30-day exploitation "
+             "probability. An asset with a KEV CVE or one in the top EPSS percentile has its "
+             "risk band escalated +1._\n")
     any_cve = False
     for n, _ in ranked:
         cves = mapped.get(n, {}).get("cves", [])
@@ -131,10 +131,16 @@ def generate_briefing(architecture, mapped, scores, paths, chokepoints_, campaig
             continue
         any_cve = True
         L.append(f"**{n}**")
-        for c in sorted(cves, key=lambda c: -(c.get("cvss") or 0))[:5]:
-            kev = " — **KEV (actively exploited)**" if c.get("known_exploited") else ""
+        ranked_cves = sorted(cves, key=lambda c: (bool(c.get("known_exploited")),
+                                                  c.get("epss") or 0, c.get("cvss") or 0),
+                             reverse=True)[:5]
+        for c in ranked_cves:
+            kev = " — **KEV**" if c.get("known_exploited") else ""
             ver = "" if c.get("version_status") == "confirmed" else " _(version not confirmed)_"
-            L.append(f"- {c['id']} — CVSS {c.get('cvss')} ({c.get('severity')}){kev}{ver}")
+            epss = c.get("epss")
+            epss_s = (f" · EPSS {epss * 100:.0f}% (p{(c.get('epss_pctl') or 0) * 100:.0f})"
+                      if epss is not None else "")
+            L.append(f"- {c['id']} — CVSS {c.get('cvss')} ({c.get('severity')}){kev}{epss_s}{ver}")
         L.append("")
     if not any_cve:
         L.append("_No CVEs attached — run the pipeline with CVE enrichment "
@@ -210,6 +216,7 @@ def generate_briefing(architecture, mapped, scores, paths, chokepoints_, campaig
         L.append(f"_Data provenance: ATT&CK for ICS — {provenance.get('attack', '?')}; "
                  f"CISA KEV {provenance.get('kev_date', '?')} "
                  f"({provenance.get('kev_count', '?')} CVEs); "
+                 f"EPSS model {provenance.get('epss_date', '?')}; "
                  f"CVE snapshot generated {provenance.get('snapshot_generated', '?')}._")
 
     text = "\n".join(L)

@@ -20,8 +20,9 @@ The pipeline runs end to end. It loads a reference architecture, maps assets to 
 ICS techniques, scores risk with the 800-30 Table I-2 lookup, runs segmentation-aware
 attack-path and chokepoint analysis (attack paths respect the firewall policy, and IT→OT
 boundary bypasses are flagged), correlates known campaigns, and generates the briefing and
-figures. Real CVEs (CPE-matched and KEV-flagged) come from a committed snapshot by default;
-`--cves` refreshes them live from NVD.
+figures. Real CVEs come from a committed snapshot by default (CPE-matched, version-filtered,
+flagged with CISA KEV, and scored with FIRST.org EPSS exploitation probability); `--cves`
+refreshes them live from NVD.
 
 ## Sample output
 
@@ -147,7 +148,8 @@ live discovery.
 
 1. Load and validate the architecture YAML into an asset graph and a segmentation policy.
 2. Map assets to ATT&CK for ICS techniques via `mapping_rules.yaml`.
-3. Attach CPE-matched, KEV-flagged CVEs (committed snapshot by default, `--cves` for live NVD).
+3. Attach CPE-matched CVEs, flagged with CISA KEV and FIRST.org EPSS (committed snapshot by
+   default, `--cves` for live NVD).
 4. Score risk (NIST 800-30 Table I-2) and run segmentation-aware attack-path/chokepoint analysis.
 5. Correlate known campaigns from `threat_trends.yaml`, with a confidence score.
 6. Write the briefing (including IEC 62443 zones/conduits), figures, and an ATT&CK Navigator

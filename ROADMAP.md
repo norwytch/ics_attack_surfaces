@@ -225,6 +225,19 @@ M-codes (e.g. M0930 Network Segmentation, M0807 Network Allowlists), ranked by c
 **Done when — met.** Briefing recommendations cite specific ATT&CK mitigations per exposed
 technique.
 
+### 20. EPSS exploitation scoring — DONE
+**Why.** KEV is a binary, lagging signal (a CVE is on the list only after exploitation is
+confirmed). FIRST.org's EPSS is a published ML model that predicts 30-day exploitation
+probability, which is exactly the forward-looking signal the risk model lacked.
+**What was done.** `data_sources.fetch_epss` batch-queries the EPSS API and caches it; the
+snapshot builder attaches an EPSS probability + percentile to every CVE and ranks CVEs by it.
+The exploitation escalator now fires on KEV *or* top-percentile EPSS (≥ 0.95), and the
+briefing shows EPSS per CVE plus an EPSS line in the provenance stamp. EPSS scores are
+right-skewed, so the percentile is the threshold. On the water plant EPSS escalates three
+assets that KEV alone does not, so the signals are complementary, not redundant. This is the
+"incorporate ML efficiently" path: consume a published model's output as a feature, leaving
+the engine deterministic and auditable.
+
 ---
 
 **Tier 4 complete.** The project now ships recognizable analyst artifacts (ATT&CK Navigator

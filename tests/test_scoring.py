@@ -133,6 +133,17 @@ def test_kev_escalates_risk_band():
         assert esc["severity"] == base["severity"] + 1
 
 
+def test_high_epss_escalates_band():
+    # a top-percentile EPSS CVE escalates even without a KEV listing; below threshold does not.
+    arch = load_architecture(ARCH_PATH)
+    target = "wayside_plc"
+    base = score_architecture(arch, cves_by_asset={})[target]
+    hi = score_architecture(arch, cves_by_asset={target: [{"id": "X", "epss_pctl": 0.97}]})[target]
+    lo = score_architecture(arch, cves_by_asset={target: [{"id": "Y", "epss_pctl": 0.50}]})[target]
+    assert hi["kev_escalated"] is True and hi["severity"] >= base["severity"]
+    assert lo["kev_escalated"] is False
+
+
 @pytest.mark.parametrize("arch_path", [ARCH_PATH, WATER_PATH])
 def test_scoring_ranking_is_robust_to_weight_perturbation(arch_path):
     # "Own the scoring": the priority conclusion must not hinge on the exact weights.

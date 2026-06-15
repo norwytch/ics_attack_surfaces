@@ -75,6 +75,7 @@ def build(arch_path="data/reference_architecture.yaml",
         "attack": attack_provenance(attack_path),
         "kev_date": str(meta.get("kev_date_released", "?"))[:10],
         "kev_count": meta.get("kev_count", "?"),
+        "epss_date": meta.get("epss_model_date", "?"),
         "snapshot_generated": meta.get("generated", "?"),
     }
 

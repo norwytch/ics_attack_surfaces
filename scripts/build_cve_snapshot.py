@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from ics_modeler.assets import load_architecture
-from ics_modeler.data_sources import fetch_kev_catalog, lookup_cves_by_cpe
+from ics_modeler.data_sources import fetch_epss, fetch_kev_catalog, lookup_cves_by_cpe
 
 ARCHES = ["data/reference_architecture.yaml", "data/water_treatment.yaml"]
 DEST = "data/cve_snapshot.json"
@@ -36,12 +36,27 @@ def main():
             products[hint] = cves
             kev_n = sum(c["known_exploited"] for c in cves)
             print(f"  {hint:48} {len(cves):2} CVEs  ({kev_n} in KEV)")
+
+    # EPSS (FIRST.org ML exploitation-probability model): batch-fetch, attach, re-rank
+    epss = fetch_epss({c["id"] for cves in products.values() for c in cves})
+    epss_date = next((v["date"] for v in epss.values() if v.get("date")), "?")
+    for cves in products.values():
+        for c in cves:
+            e = epss.get(c["id"])
+            c["epss"] = e["epss"] if e else None
+            c["epss_pctl"] = e["percentile"] if e else None
+        cves.sort(key=lambda c: (c["known_exploited"], c.get("epss") or 0, c["cvss"] or 0),
+                  reverse=True)
+    print(f"EPSS: scored {sum(1 for v in epss.values())} of "
+          f"{len({c['id'] for cves in products.values() for c in cves})} CVEs")
+
     snapshot = {
         "_meta": {
             "generated": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
             "kev_catalog_version": kev_meta.get("catalogVersion", "?"),
             "kev_date_released": kev_meta.get("dateReleased", "?"),
             "kev_count": len(kev),
+            "epss_model_date": epss_date,
             "nvd_api": "2.0",
         },
         "products": products,

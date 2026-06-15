@@ -144,9 +144,18 @@ def _exposure(graph, entry_nodes, name) -> float:
     return 100.0 * (_EXPOSURE_DECAY ** min(dists)) if dists else 0.0
 
 
-def _has_kev(cves) -> bool:
-    """True if any attached CVE is in the CISA KEV catalog (actively exploited)."""
-    return any(c.get("known_exploited") for c in (cves or []))
+EPSS_PERCENTILE_THRESHOLD = 0.95  # top-5% predicted exploitation escalates, like KEV
+
+
+def _exploit_escalation(cves) -> bool:
+    """Escalate an asset whose CVEs include a confirmed-exploited (CISA KEV) one, or one in
+    the top EPSS percentile (FIRST.org's ML estimate of likely exploitation)."""
+    for c in (cves or []):
+        if c.get("known_exploited"):
+            return True
+        if (c.get("epss_pctl") or 0) >= EPSS_PERCENTILE_THRESHOLD:
+            return True
+    return False
 
 
 def _downstream(graph, name) -> set:
@@ -194,10 +203,11 @@ def score_architecture(architecture, graph=None, cves_by_asset=None,
                        kev_escalate=True) -> dict:
     """Per-asset {likelihood, impact, band, severity, kev_escalated} — the report's input.
 
-    The risk band comes from the NIST 800-30 Table I-2 lookup, then a **KEV escalator**:
-    an asset carrying an actively-exploited (CISA KEV) CVE has its band bumped up one level
-    (capped at Very High), reflecting CISA BOD 22-01's must-patch posture. Weights are
-    injectable so `sensitivity()` can perturb them; `kev_escalate=False` disables the bump.
+    The risk band comes from the NIST 800-30 Table I-2 lookup, then an **exploitation
+    escalator**: an asset whose CVEs include a CISA-KEV (confirmed-exploited) entry, or one in
+    the top EPSS percentile (predicted likely to be exploited), has its band bumped up one
+    level (capped at Very High). Weights are injectable so `sensitivity()` can perturb them;
+    `kev_escalate=False` disables the bump.
     """
     graph = graph if graph is not None else architecture.graph()
     cves_by_asset = cves_by_asset or {}
@@ -207,7 +217,7 @@ def score_architecture(architecture, graph=None, cves_by_asset=None,
                                       weights=likelihood_weights)
         impact = score_impact(asset, graph, weights=impact_weights)
         severity = risk_severity(likelihood, impact)
-        escalated = kev_escalate and _has_kev(cves_by_asset.get(name))
+        escalated = kev_escalate and _exploit_escalation(cves_by_asset.get(name))
         if escalated:
             severity = min(4, severity + 1)
         out[name] = {

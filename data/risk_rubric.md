@@ -65,13 +65,17 @@ even the asset carrying a KEV CVE. See the KEV escalator below.
 | Process criticality (**0.60**) | by Purdue level: L0/L1 = 100, L2 = 60, L3 = 40, DMZ = 30, L4 = 20, L5 = 10 | Dominant: physical-process impact is the whole point of ICS risk. A controller is consequential regardless of how many neighbors it has. |
 | Blast radius (**0.40**) | downstream-dependent assets below it in the Purdue stack, normalized | Secondary amplifier: a controller that many process assets depend on is worse than an isolated one. |
 
-## KEV escalator (post-lookup)
+## Exploitation escalator (post-lookup)
 
-After the Table I-2 risk band is computed, an asset carrying an **actively-exploited
-(CISA KEV)** CVE has its band **escalated by one level** (capped at Very High). This reflects
-CISA BOD 22-01's must-patch posture and makes the KEV signal decision-relevant — the
-ablation showed it was inert as a weighted factor, so it is applied as a discrete escalation
-where it actually moves the result.
+After the Table I-2 risk band is computed, an asset is escalated one band (capped at Very
+High) if any of its CVEs is either **actively exploited (CISA KEV)** or in the **top EPSS
+percentile** (≥ 0.95). KEV reflects confirmed exploitation (CISA BOD 22-01's must-patch
+posture). EPSS is FIRST.org's published machine-learning estimate of 30-day exploitation
+probability; its raw scores are right-skewed, so the percentile is the threshold. EPSS catches
+CVEs that are likely to be exploited but not yet KEV-listed: on the water plant it escalates
+three assets (`scada_server`, `operator_hmi`, `distribution_rtu`) that KEV alone does not, so
+the two signals are complementary. Applied as a discrete escalation because an ablation showed
+the old weighted CVE factor moved no result.
 
 ## Sensitivity — does the ranking depend on the exact weights?
 
