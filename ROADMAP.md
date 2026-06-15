@@ -297,8 +297,22 @@ against the attack-graph literature and commercial ICS platforms, with the hones
 contribution is **integration** (ATT&CK-ICS + 62443 + 800-30 + CVE/KEV + segmentation +
 briefing/Navigator export), not a novel algorithm.
 
-**Still open.** Realistic-scale architectures and a *blind* criterion test (architecture
-authored by someone other than the tool author) — genuine gaps, deliberately surfaced.
+### 19. Realistic-scale architecture + scaling analysis — DONE
+**Why.** Everything had been validated on ~10–14 node hand-authored models; no evidence the
+algorithms or narrative survive at realistic scale.
+**What was done.** `experiments/scale.py` generates a synthetic hierarchical plant (site SCADA
+over N areas, each with controllers + field devices) at 94 → 1,106 nodes and times every stage
+([experiments/SCALE.md](experiments/SCALE.md)). **Findings:** per-run analysis (graph, mapping,
+attack paths, scoring, segmentation) stays in the low tens of milliseconds even at ~1,100
+nodes; the bottlenecks are **betweenness centrality** (O(V·E), ~2 s at 1,106 nodes) and
+**`sensitivity()`** (re-scores ~81×, skipped above a few hundred nodes), both with known local
+fixes (sample-approximate betweenness; memoize graph-derived factors). Figures stop being
+*visually* useful past ~50 nodes — the text/table/Navigator outputs are what scale. A smoke
+test guards the generator.
+
+**Still open.** A *blind* criterion test — an architecture authored by someone other than the
+tool author, to remove residual modeling bias. Needs a second person, so it can't be closed
+solo; surfaced deliberately rather than hidden.
 
 ---
 

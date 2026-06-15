@@ -115,6 +115,12 @@ of the **2015 Ukraine power-grid attack** and checks it against the documented i
 documented OT techniques — with honest caveats (n=1, reconstruction-based, and the IT-stage /
 firmware / wiper techniques are out of the tool's modeled scope).
 
+A scale test ([experiments/SCALE.md](experiments/SCALE.md), `python -m experiments.scale`)
+generates synthetic plants up to ~1,100 nodes and times each stage: per-run analysis stays in
+the tens of milliseconds and the narrative holds, with two components flagged for a known,
+local fix before thousands of nodes — **betweenness centrality** (sample-approximate it) and
+**`sensitivity()`** (memoize graph-derived factors).
+
 ## Related work and contribution
 
 Attack-path analysis on infrastructure graphs is well-established: logic-based attack-graph

@@ -29,6 +29,21 @@ def test_top_k_overlap():
     assert top_k_overlap(a, c, 1) == 0.0
 
 
+def test_scale_generator_produces_working_architecture():
+    # the synthetic generator must yield a valid architecture the pipeline can analyze
+    from experiments.scale import generate
+    from ics_modeler.mapping import load_rules, map_architecture
+    from ics_modeler.scoring import path_findings, score_architecture
+
+    arch = generate(5)
+    assert len(arch.assets) > 50
+    mapped = map_architecture(arch, load_rules("data/mapping_rules.yaml"))
+    assert any(m["techniques"] for m in mapped.values())
+    scores = score_architecture(arch)
+    paths = path_findings(arch.reachability_graph(), arch.entry_nodes, arch.target_nodes, scores)
+    assert paths  # entry reaches the targets through the hierarchy
+
+
 def test_criterion_ukraine_flags_documented_root_cause():
     # guards the criterion-validity headline: the tool independently flags the VPN IT->OT
     # bypass that the 2015 Ukraine report identified as the root cause.
